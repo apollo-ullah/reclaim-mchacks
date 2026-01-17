@@ -7,12 +7,13 @@
 import 'dotenv/config';
 import { runAuthTests } from './auth.test';
 import { runMintTests } from './mint.test';
+import { runVerifyTests } from './verify.test';
 
 async function runAllTests(): Promise<void> {
   console.log('\n╔════════════════════════════════════════════════════════╗');
   console.log('║                                                        ║');
   console.log('║     RECLAIM CONTENT PROVENANCE TEST SUITE             ║');
-  console.log('║     Testing Authentication & Minting Logic            ║');
+  console.log('║     Testing Auth, Minting & Verification              ║');
   console.log('║                                                        ║');
   console.log('╚════════════════════════════════════════════════════════╝\n');
 
@@ -27,6 +28,10 @@ async function runAllTests(): Promise<void> {
     // Run minting tests
     console.log('\nRunning Minting & Contract Tests...\n');
     await runMintTests();
+    
+    // Run verification tests
+    console.log('\nRunning Verification Tests...\n');
+    await runVerifyTests();
     
   } catch (error) {
     console.error('\nTest execution failed:', error);

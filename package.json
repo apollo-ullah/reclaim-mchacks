@@ -7,7 +7,8 @@
     "init-tree": "ts-node src/solana/init-tree.ts",
     "test": "ts-node src/solana/test/run-all.ts",
     "test:auth": "ts-node src/solana/test/auth.test.ts",
-    "test:mint": "ts-node src/solana/test/mint.test.ts"
+    "test:mint": "ts-node src/solana/test/mint.test.ts",
+    "test:verify": "ts-node src/solana/test/verify.test.ts"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,7 @@
   },
   "homepage": "https://github.com/apollo-ullah/reclaim-mchacks#readme",
   "dependencies": {
+    "@metaplex-foundation/digital-asset-standard-api": "^2.0.0",
     "@metaplex-foundation/mpl-bubblegum": "^5.0.2",
     "@metaplex-foundation/umi-bundle-defaults": "^1.4.1",
     "@solana/web3.js": "^1.98.4",

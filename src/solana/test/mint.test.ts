@@ -62,13 +62,13 @@ export async function runMintTests(): Promise<void> {
   console.log(`  Payer Key: ${payerKey ? '✓ SET' : '✗ NOT SET'}\n`);
 
   if (!treeAddress) {
-    console.log('⚠️  SKIPPING MINT TESTS: SOLANA_TREE_ADDRESS not configured');
+    console.log('SKIPPING MINT TESTS: SOLANA_TREE_ADDRESS not configured');
     console.log('   Run: npm run init-tree to create a tree first\n');
     return;
   }
 
   if (!payerKey) {
-    console.log('⚠️  SKIPPING MINT TESTS: SOLANA_PAYER_PRIVATE_KEY not configured');
+    console.log('SKIPPING MINT TESTS: SOLANA_PAYER_PRIVATE_KEY not configured');
     console.log('   Set your Solana wallet private key in .env\n');
     return;
   }
