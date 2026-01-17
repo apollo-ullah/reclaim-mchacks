@@ -6,8 +6,7 @@
 import 'dotenv/config';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { Request, Response } from 'express';
-import { authenticateWithSolana, verifyJWT } from '../auth';
+import { authenticateWithSolana, verifyJWT, verifyAuthHeader, SolanaAuthRequest } from '../auth';
 
 // Test results tracking
 interface TestResult {
@@ -19,23 +18,8 @@ interface TestResult {
 
 const testResults: TestResult[] = [];
 
-// Helper: Mock Express Response
-function mockResponse(): Response {
-  const res: any = {};
-  res.statusCode = 200;
-  res.status = (code: number) => {
-    res.statusCode = code;
-    return res;
-  };
-  res.json = (data: any) => {
-    res.jsonData = data;
-    return res;
-  };
-  return res as Response;
-}
-
 // Helper: Generate valid authentication payload
-function generateAuthPayload(offsetMinutes = 0) {
+function generateAuthPayload(offsetMinutes = 0): SolanaAuthRequest & { keyPair: nacl.SignKeyPair } {
   const keyPair = nacl.sign.keyPair();
   const publicKey = bs58.encode(keyPair.publicKey);
   
@@ -77,145 +61,157 @@ export async function runAuthTests(): Promise<void> {
 
   // Test 1: Valid Authentication
   await runTest('Valid wallet signature authentication', async () => {
-    const payload = generateAuthPayload(0);
-    const req = { body: payload } as Request;
-    const res = mockResponse();
+    const { publicKey, signature, message } = generateAuthPayload(0);
     
-    await authenticateWithSolana(req, res);
+    const result = await authenticateWithSolana({ publicKey, signature, message });
     
-    if (res.statusCode !== 200) {
-      throw new Error(`Expected 200, got ${res.statusCode}`);
+    if (!result.success) {
+      throw new Error(`Expected success, got error: ${result.error}`);
     }
     
-    const jsonData = (res as any).jsonData;
-    if (!jsonData.success || !jsonData.token) {
-      throw new Error('Expected success=true and token in response');
+    if (!result.token) {
+      throw new Error('Expected token in response');
     }
     
-    if (jsonData.walletAddress !== payload.publicKey) {
+    if (result.walletAddress !== publicKey) {
       throw new Error('Wallet address mismatch in response');
     }
   });
 
   // Test 2: Invalid Signature (Tampered Message)
   await runTest('Reject tampered message signature', async () => {
-    const payload = generateAuthPayload(0);
-    payload.message = `Login to ReclaimApp at ${Date.now()}`; // Change message AFTER signing
+    const { publicKey, signature } = generateAuthPayload(0);
+    const tamperedMessage = `Login to ReclaimApp at ${Date.now()}`; // Different message than what was signed
     
-    const req = { body: payload } as Request;
-    const res = mockResponse();
+    const result = await authenticateWithSolana({ publicKey, signature, message: tamperedMessage });
     
-    await authenticateWithSolana(req, res);
-    
-    if (res.statusCode !== 401) {
-      throw new Error(`Expected 401 (invalid signature), got ${res.statusCode}`);
+    if (result.success) {
+      throw new Error('Expected failure for tampered message');
     }
     
-    const jsonData = (res as any).jsonData;
-    if (jsonData.success !== false) {
-      throw new Error('Expected success=false for invalid signature');
+    if (!result.error?.includes('Invalid signature')) {
+      throw new Error('Expected "Invalid signature" error message');
     }
   });
 
   // Test 3: Expired Timestamp (Replay Attack Prevention)
   await runTest('Reject expired timestamp (>5 minutes old)', async () => {
-    const payload = generateAuthPayload(-10); // 10 minutes in the past
+    const { publicKey, signature, message } = generateAuthPayload(-10); // 10 minutes in the past
     
-    const req = { body: payload } as Request;
-    const res = mockResponse();
+    const result = await authenticateWithSolana({ publicKey, signature, message });
     
-    await authenticateWithSolana(req, res);
-    
-    if (res.statusCode !== 401) {
-      throw new Error(`Expected 401 (expired), got ${res.statusCode}`);
+    if (result.success) {
+      throw new Error('Expected failure for expired timestamp');
     }
     
-    const jsonData = (res as any).jsonData;
-    if (!jsonData.error || !jsonData.error.includes('expired')) {
+    if (!result.error?.includes('expired')) {
       throw new Error('Expected "expired" error message');
     }
   });
 
   // Test 4: Future Timestamp (Clock Skew Protection)
   await runTest('Reject future timestamp (clock skew)', async () => {
-    const payload = generateAuthPayload(5); // 5 minutes in the future
+    const { publicKey, signature, message } = generateAuthPayload(5); // 5 minutes in the future
     
-    const req = { body: payload } as Request;
-    const res = mockResponse();
+    const result = await authenticateWithSolana({ publicKey, signature, message });
     
-    await authenticateWithSolana(req, res);
-    
-    if (res.statusCode !== 401) {
-      throw new Error(`Expected 401 (future timestamp), got ${res.statusCode}`);
+    if (result.success) {
+      throw new Error('Expected failure for future timestamp');
     }
   });
 
   // Test 5: Missing Required Fields
   await runTest('Reject request with missing fields', async () => {
-    const req = { body: { publicKey: 'abc123' } } as Request; // Missing signature and message
-    const res = mockResponse();
+    const result = await authenticateWithSolana({ 
+      publicKey: 'abc123', 
+      signature: '', 
+      message: '' 
+    });
     
-    await authenticateWithSolana(req, res);
+    if (result.success) {
+      throw new Error('Expected failure for missing fields');
+    }
     
-    if (res.statusCode !== 400) {
-      throw new Error(`Expected 400 (bad request), got ${res.statusCode}`);
+    if (!result.error?.includes('Missing required fields')) {
+      throw new Error('Expected "Missing required fields" error');
     }
   });
 
   // Test 6: Invalid Base58 Encoding
   await runTest('Reject invalid Base58 encoding', async () => {
-    const payload = generateAuthPayload(0);
-    payload.signature = 'not-valid-base58!!!'; // Invalid Base58
+    const { publicKey, message } = generateAuthPayload(0);
     
-    const req = { body: payload } as Request;
-    const res = mockResponse();
+    const result = await authenticateWithSolana({ 
+      publicKey, 
+      signature: 'not-valid-base58!!!', 
+      message 
+    });
     
-    await authenticateWithSolana(req, res);
+    if (result.success) {
+      throw new Error('Expected failure for invalid Base58');
+    }
     
-    if (res.statusCode !== 400) {
-      throw new Error(`Expected 400 (invalid encoding), got ${res.statusCode}`);
+    if (!result.error?.includes('Invalid Base58')) {
+      throw new Error('Expected "Invalid Base58" error');
     }
   });
 
   // Test 7: JWT Token Verification
-  await runTest('Verify JWT middleware accepts valid token', async () => {
+  await runTest('Verify JWT token verification', async () => {
     // First, get a valid token
-    const payload = generateAuthPayload(0);
-    const req1 = { body: payload } as Request;
-    const res1 = mockResponse();
+    const { publicKey, signature, message } = generateAuthPayload(0);
     
-    await authenticateWithSolana(req1, res1);
-    const token = (res1 as any).jsonData.token;
+    const authResult = await authenticateWithSolana({ publicKey, signature, message });
     
-    // Now verify the token
-    const req2 = {
-      headers: { authorization: `Bearer ${token}` }
-    } as any;
-    const res2 = mockResponse();
-    let nextCalled = false;
-    const next = () => { nextCalled = true; };
-    
-    verifyJWT(req2, res2, next);
-    
-    if (!nextCalled) {
-      throw new Error('Expected next() to be called for valid token');
+    if (!authResult.success || !authResult.token) {
+      throw new Error('Failed to get auth token');
     }
     
-    if ((req2 as any).walletAddress !== payload.publicKey) {
-      throw new Error('Wallet address not attached to request');
+    // Now verify the token
+    const decoded = verifyJWT(authResult.token);
+    
+    if (!decoded) {
+      throw new Error('Token verification failed');
+    }
+    
+    if (decoded.walletAddress !== publicKey) {
+      throw new Error('Wallet address mismatch in decoded token');
     }
   });
 
-  // Test 8: JWT Middleware Rejects Missing Token
-  await runTest('JWT middleware rejects missing token', async () => {
-    const req = { headers: {} } as any;
-    const res = mockResponse();
-    const next = () => {};
+  // Test 8: Verify Auth Header Function
+  await runTest('verifyAuthHeader accepts valid Bearer token', async () => {
+    const { publicKey, signature, message } = generateAuthPayload(0);
     
-    verifyJWT(req, res, next);
+    const authResult = await authenticateWithSolana({ publicKey, signature, message });
     
-    if (res.statusCode !== 401) {
-      throw new Error(`Expected 401 (no token), got ${res.statusCode}`);
+    if (!authResult.success || !authResult.token) {
+      throw new Error('Failed to get auth token');
+    }
+    
+    const walletAddress = verifyAuthHeader(`Bearer ${authResult.token}`);
+    
+    if (walletAddress !== publicKey) {
+      throw new Error('Wallet address mismatch from verifyAuthHeader');
+    }
+  });
+
+  // Test 9: verifyAuthHeader rejects missing/invalid headers
+  await runTest('verifyAuthHeader rejects invalid headers', async () => {
+    if (verifyAuthHeader(null) !== null) {
+      throw new Error('Expected null for null header');
+    }
+    
+    if (verifyAuthHeader('') !== null) {
+      throw new Error('Expected null for empty header');
+    }
+    
+    if (verifyAuthHeader('NotBearer token') !== null) {
+      throw new Error('Expected null for non-Bearer header');
+    }
+    
+    if (verifyAuthHeader('Bearer invalid-token') !== null) {
+      throw new Error('Expected null for invalid token');
     }
   });
 
@@ -256,4 +252,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-

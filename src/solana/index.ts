@@ -13,7 +13,11 @@ export {
 export {
   authenticateWithSolana,
   verifyJWT,
-  generateChallengeMessage
+  verifyAuthHeader,
+  generateChallengeMessage,
+  type SolanaAuthRequest,
+  type JWTPayload,
+  type AuthResult
 } from './auth';
 
 // Minting Service

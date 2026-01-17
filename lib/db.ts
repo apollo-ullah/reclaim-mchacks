@@ -1,11 +1,11 @@
-import Database from "better-sqlite3";
+import Database, { Database as DatabaseType } from "better-sqlite3";
 import path from "path";
 
 // Database file path
 const DB_PATH = path.join(process.cwd(), "reclaim.db");
 
 // Create or open database
-const db = new Database(DB_PATH);
+const db: DatabaseType = new Database(DB_PATH);
 
 // Enable WAL mode for better performance
 db.pragma("journal_mode = WAL");

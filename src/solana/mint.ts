@@ -57,7 +57,7 @@ function getUmi(): Umi {
     );
   }
 
-  if (!PAYER_PRIVATE_KEY) {
+  if (!process.env.SOLANA_PAYER_PRIVATE_KEY) {
     throw new Error(
       'Missing SOLANA_PAYER_PRIVATE_KEY in environment variables.\n' +
       'This wallet pays gas fees and must be the tree authority.'

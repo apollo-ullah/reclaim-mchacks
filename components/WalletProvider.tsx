@@ -35,14 +35,11 @@ export const WalletProvider: FC<WalletProviderProps> = ({ children }) => {
     setMounted(true);
   }, []);
 
-  // Prevent hydration errors by not rendering wallet UI until mounted
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Always wrap with provider context, but disable autoConnect until mounted
+  // This prevents "WalletContext without provider" errors
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <SolanaWalletProvider wallets={wallets} autoConnect>
+      <SolanaWalletProvider wallets={wallets} autoConnect={mounted}>
         <WalletModalProvider>
           <AuthProvider>{children}</AuthProvider>
         </WalletModalProvider>
