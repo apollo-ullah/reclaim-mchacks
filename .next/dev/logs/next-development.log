@@ -1,0 +1,71 @@
+[00:00:00.906] Server  LOG     ✓ Ready in 689ms
+[00:00:11.835] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:25:16.660] Server  LOG     ✓ Compiled in 210ms
+[00:25:43.809] Server  ERROR   (node:50532) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[00:25:43.889] Server  LOG     ✓ Compiled in 0ms
+[00:37:57.222] Server  LOG     ✓ Compiled in 1623ms
+[00:38:04.955] Server  LOG     ✓ Compiled in 488ms
+[00:38:17.333] Server  LOG     ✓ Compiled in 280ms
+[00:38:17.618] Browser ERROR   {}
+[00:38:17.619] Browser ERROR   {}
+[00:38:17.619] Browser ERROR   {}
+[00:38:17.619] Browser ERROR   {}
+[00:38:17.620] Browser ERROR   {}
+[00:38:17.620] Browser ERROR   {}
+[00:40:34.560] Server  LOG     ✓ Compiled in 538ms
+[00:40:46.050] Server  LOG     ✓ Compiled in 486ms
+[00:41:02.660] Server  LOG     ✓ Compiled in 251ms
+[00:41:54.780] Server  LOG     ✓ Compiled in 251ms
+[00:42:16.112] Server  LOG     ✓ Compiled in 104ms
+[00:51:25.954] Browser ERROR   {"name":"WalletNotReadyError"} {"_connecting":false,"_events":{"connect":{"context":"[Circular]","once":false},"disconnect":[{"context":"[Circular]","once":false},{"context":"[Circular]","once":false}],"error":{"context":"[Circular]","once":false},"readyStateChange":{"context":"[Circular]","once":false}},"_eventsCount":4,"_publicKey":null,"_readyState":"NotDetected","_wallet":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDgiIGhlaWdodD0iMTA4IiB2aWV3Qm94PSIwIDAgMTA4IDEwOCIgZmlsbD0ibm9uZSI+CjxyZWN0IHdpZHRoPSIxMDgiIGhlaWdodD0iMTA4IiByeD0iMjYiIGZpbGw9IiNBQjlGRjIiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik00Ni41MjY3IDY5LjkyMjlDNDIuMDA1NCA3Ni44NTA5IDM0LjQyOTIgODUuNjE4MiAyNC4zNDggODUuNjE4MkMxOS41ODI0IDg1LjYxODIgMTUgODMuNjU2MyAxNSA3NS4xMzQyQzE1IDUzLjQzMDUgNDQuNjMyNiAxOS44MzI3IDcyLjEyNjggMTkuODMyN0M4Ny43NjggMTkuODMyNyA5NCAzMC42ODQ2IDk0IDQzLjAwNzlDOTQgNTguODI1OCA4My43MzU1IDc2LjkxMjIgNzMuNTMyMSA3Ni45MTIyQzcwLjI5MzkgNzYuOTEyMiA2OC43MDUzIDc1LjEzNDIgNjguNzA1MyA3Mi4zMTRDNjguNzA1MyA3MS41NzgzIDY4LjgyNzUgNzAuNzgxMiA2OS4wNzE5IDY5LjkyMjlDNjUuNTg5MyA3NS44Njk5IDU4Ljg2ODUgODEuMzg3OCA1Mi41NzU0IDgxLjM4NzhDNDcuOTkzIDgxLjM4NzggNDUuNjcxMyA3OC41MDYzIDQ1LjY3MTMgNzQuNDU5OEM0NS42NzEzIDcyLjk4ODQgNDUuOTc2OCA3MS40NTU2IDQ2LjUyNjcgNjkuOTIyOVpNODMuNjc2MSA0Mi41Nzk0QzgzLjY3NjEgNDYuMTcwNCA4MS41NTc1IDQ3Ljk2NTggNzkuMTg3NSA0Ny45NjU4Qzc2Ljc4MTYgNDcuOTY1OCA3NC42OTg5IDQ2LjE3MDQgNzQuNjk4OSA0Mi41Nzk0Qzc0LjY5ODkgMzguOTg4NSA3Ni43ODE2IDM3LjE5MzEgNzkuMTg3NSAzNy4xOTMxQzgxLjU1NzUgMzcuMTkzMSA4My42NzYxIDM4Ljk4ODUgODMuNjc2MSA0Mi41Nzk0Wk03MC4yMTAzIDQyLjU3OTVDNzAuMjEwMyA0Ni4xNzA0IDY4LjA5MTYgNDcuOTY1OCA2NS43MjE2IDQ3Ljk2NThDNjMuMzE1NyA0Ny45NjU4IDYxLjIzMyA0Ni4xNzA0IDYxLjIzMyA0Mi41Nzk1QzYxLjIzMyAzOC45ODg1IDYzLjMxNTcgMzcuMTkzMSA2NS43MjE2IDM3LjE5MzFDNjguMDkxNiAzNy4xOTMxIDcwLjIxMDMgMzguOTg4NSA3MC4yMTAzIDQyLjU3OTVaIiBmaWxsPSIjRkZGREY4Ii8+Cjwvc3ZnPg==","name":"Phantom","supportedTransactionVersions":{},"url":"https://phantom.app"}
+[01:07:09.822] Browser ERROR   {"name":"WalletNotReadyError"} {"_connecting":false,"_events":{"connect":{"context":"[Circular]","once":false},"disconnect":[{"context":"[Circular]","once":false},{"context":"[Circular]","once":false}],"error":{"context":"[Circular]","once":false},"readyStateChange":{"context":"[Circular]","once":false}},"_eventsCount":4,"_publicKey":null,"_readyState":"NotDetected","_wallet":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDgiIGhlaWdodD0iMTA4IiB2aWV3Qm94PSIwIDAgMTA4IDEwOCIgZmlsbD0ibm9uZSI+CjxyZWN0IHdpZHRoPSIxMDgiIGhlaWdodD0iMTA4IiByeD0iMjYiIGZpbGw9IiNBQjlGRjIiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik00Ni41MjY3IDY5LjkyMjlDNDIuMDA1NCA3Ni44NTA5IDM0LjQyOTIgODUuNjE4MiAyNC4zNDggODUuNjE4MkMxOS41ODI0IDg1LjYxODIgMTUgODMuNjU2MyAxNSA3NS4xMzQyQzE1IDUzLjQzMDUgNDQuNjMyNiAxOS44MzI3IDcyLjEyNjggMTkuODMyN0M4Ny43NjggMTkuODMyNyA5NCAzMC42ODQ2IDk0IDQzLjAwNzlDOTQgNTguODI1OCA4My43MzU1IDc2LjkxMjIgNzMuNTMyMSA3Ni45MTIyQzcwLjI5MzkgNzYuOTEyMiA2OC43MDUzIDc1LjEzNDIgNjguNzA1MyA3Mi4zMTRDNjguNzA1MyA3MS41NzgzIDY4LjgyNzUgNzAuNzgxMiA2OS4wNzE5IDY5LjkyMjlDNjUuNTg5MyA3NS44Njk5IDU4Ljg2ODUgODEuMzg3OCA1Mi41NzU0IDgxLjM4NzhDNDcuOTkzIDgxLjM4NzggNDUuNjcxMyA3OC41MDYzIDQ1LjY3MTMgNzQuNDU5OEM0NS42NzEzIDcyLjk4ODQgNDUuOTc2OCA3MS40NTU2IDQ2LjUyNjcgNjkuOTIyOVpNODMuNjc2MSA0Mi41Nzk0QzgzLjY3NjEgNDYuMTcwNCA4MS41NTc1IDQ3Ljk2NTggNzkuMTg3NSA0Ny45NjU4Qzc2Ljc4MTYgNDcuOTY1OCA3NC42OTg5IDQ2LjE3MDQgNzQuNjk4OSA0Mi41Nzk0Qzc0LjY5ODkgMzguOTg4NSA3Ni43ODE2IDM3LjE5MzEgNzkuMTg3NSAzNy4xOTMxQzgxLjU1NzUgMzcuMTkzMSA4My42NzYxIDM4Ljk4ODUgODMuNjc2MSA0Mi41Nzk0Wk03MC4yMTAzIDQyLjU3OTVDNzAuMjEwMyA0Ni4xNzA0IDY4LjA5MTYgNDcuOTY1OCA2NS43MjE2IDQ3Ljk2NThDNjMuMzE1NyA0Ny45NjU4IDYxLjIzMyA0Ni4xNzA0IDYxLjIzMyA0Mi41Nzk1QzYxLjIzMyAzOC45ODg1IDYzLjMxNTcgMzcuMTkzMSA2NS43MjE2IDM3LjE5MzFDNjguMDkxNiAzNy4xOTMxIDcwLjIxMDMgMzguOTg4NSA3MC4yMTAzIDQyLjU3OTVaIiBmaWxsPSIjRkZGREY4Ii8+Cjwvc3ZnPg==","name":"Phantom","supportedTransactionVersions":{},"url":"https://phantom.app"}
+[01:19:15.971] Browser WARN    Phantom was registered as a Standard Wallet. The Wallet Adapter for Phantom can be removed from your app.
+[01:19:15.971] Browser ERROR   {"error":{"code":4001,"message":"User rejected the request."},"name":"WalletConnectionError"} {"_events":{"connect":{"context":"[Circular]","once":false},"disconnect":[{"context":"[Circular]","once":false},{"context":"[Circular]","once":false}],"error":{"context":"[Circular]","once":false},"readyStateChange":{"context":"[Circular]","once":false}},"_eventsCount":4}
+[01:19:15.971] Browser ERROR   {"error":{"code":4001,"message":"User rejected the request."},"name":"WalletConnectionError"} {"_events":{"connect":{"context":"[Circular]","once":false},"disconnect":[{"context":"[Circular]","once":false},{"context":"[Circular]","once":false}],"error":{"context":"[Circular]","once":false},"readyStateChange":{"context":"[Circular]","once":false}},"_eventsCount":4}
+[01:19:25.362] Browser WARN    Phantom was registered as a Standard Wallet. The Wallet Adapter for Phantom can be removed from your app.
+[01:19:30.123] Browser WARN    Phantom was registered as a Standard Wallet. The Wallet Adapter for Phantom can be removed from your app.
+[01:21:01.960] Browser ERROR   Cannot update a component (`%s`) while rendering a different component (`%s`). To locate the bad setState() call inside `%s`, follow the stack trace as described in https://react.dev/link/setstate-in-render Router SignupPage SignupPage
+[01:24:21.652] Server  LOG     ✓ Compiled in 1387ms
+[01:24:34.511] Server  LOG     ✓ Compiled in 80ms
+[01:24:52.377] Server  LOG     ✓ Compiled in 2ms
+[01:25:22.097] Server  LOG     ✓ Compiled in 3.8s
+[01:25:38.901] Browser WARN    Phantom was registered as a Standard Wallet. The Wallet Adapter for Phantom can be removed from your app.
+[01:25:45.362] Server  LOG     ✓ Finished filesystem cache database compaction in 41s
+[01:25:48.063] Server  LOG     ✓ Finished writing to filesystem cache in 22.9s
+[01:28:50.901] Browser WARN    Phantom was registered as a Standard Wallet. The Wallet Adapter for Phantom can be removed from your app.
+[01:30:47.712] Browser WARN    Phantom was registered as a Standard Wallet. The Wallet Adapter for Phantom can be removed from your app.
+[01:58:43.205] Server  LOG       Reload env: .env
+[01:58:48.326] Server  LOG     ○ Compiling /_not-found/page ...
+[01:58:52.632] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:52.736] Server  ERROR   ⨯ "unhandledRejection:" Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:52.741] Server  ERROR   ⨯ "unhandledRejection: " Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:53.054] Server  ERROR   ⨯ PageNotFoundError: Cannot find module for page: route not found /_not-found/page
+[01:58:58.579] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.581] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.587] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.588] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.619] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.624] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.633] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.635] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.639] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.642] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.648] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.649] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.698] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.699] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.707] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.708] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.716] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.718] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.777] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.779] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.784] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.785] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.787] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.788] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.805] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.806] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.817] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'
+[01:58:58.820] Server  ERROR   Error: ENOENT: no such file or directory, scandir '/Users/adyanullah/Documents/GitHub/reclaim-mchacks/app'

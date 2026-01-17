@@ -1,0 +1,16 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/auth/check/route": "/api/auth/check",
+  "/api/auth/signup/route": "/api/auth/signup",
+  "/api/creator/[id]/route": "/api/creator/[id]",
+  "/api/sign/route": "/api/sign",
+  "/api/verify/route": "/api/verify",
+  "/creator/[id]/page": "/creator/[id]",
+  "/favicon.ico/route": "/favicon.ico",
+  "/login/page": "/login",
+  "/page": "/",
+  "/sign/page": "/sign",
+  "/signup/page": "/signup",
+  "/verify/page": "/verify"
+}
