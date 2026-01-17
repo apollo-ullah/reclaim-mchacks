@@ -6,14 +6,12 @@
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { 
   mplBubblegum, 
-  mintToCollectionV1,
-  LeafSchema
+  mintV1
 } from '@metaplex-foundation/mpl-bubblegum';
 import { 
   keypairIdentity,
   publicKey,
-  Umi,
-  PublicKey as UmiPublicKey
+  Umi
 } from '@metaplex-foundation/umi';
 import bs58 from 'bs58';
 
@@ -155,33 +153,29 @@ export async function registerContentAsset(
     console.log(`[Mint Service] Minting cNFT for wallet: ${userWalletAddress}`);
     console.log(`[Mint Service] Visual Hash: ${imageHash}`);
 
-    // Build mint parameters conditionally based on collection existence
-    const mintParams: any = {
-      leafOwner,
-      merkleTree,
-      metadata: {
-        name: contentName,
-        uri: metadataUri,
-        sellerFeeBasisPoints: 0, // No royalty fees
-        creators: [
-          {
-            address: leafOwner,
-            verified: false, // User is the creator
-            share: 100
-          }
-        ]
-      }
+    // Build metadata with optional collection
+    const metadata: any = {
+      name: contentName,
+      uri: metadataUri,
+      sellerFeeBasisPoints: 0,
+      collection: COLLECTION_ADDRESS 
+        ? { key: publicKey(COLLECTION_ADDRESS), verified: false }
+        : { __option: 'None' },
+      creators: [
+        {
+          address: leafOwner,
+          verified: false,
+          share: 100
+        }
+      ]
     };
 
-    // Add collection if configured
-    if (COLLECTION_ADDRESS) {
-      const collectionMint = publicKey(COLLECTION_ADDRESS);
-      mintParams.collectionMint = collectionMint;
-      mintParams.metadata.collection = { key: collectionMint, verified: false };
-    }
-
     // Execute the mint transaction
-    const mintBuilder = await mintToCollectionV1(umi, mintParams);
+    const mintBuilder = await mintV1(umi, {
+      leafOwner,
+      merkleTree,
+      metadata
+    });
 
     // Send and confirm the transaction
     const result = await mintBuilder.sendAndConfirm(umi, {
