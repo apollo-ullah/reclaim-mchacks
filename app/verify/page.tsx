@@ -7,6 +7,7 @@ import { VerificationResult } from "@/components/VerificationResult";
 interface VerifyResult {
   verified: boolean;
   creator?: string;
+  creatorDisplayName?: string;
   timestamp?: string;
   tampered?: boolean;
   message: string;
@@ -144,6 +145,7 @@ export default function VerifyPage() {
             <VerificationResult
               verified={result.verified}
               creator={result.creator}
+              creatorDisplayName={result.creatorDisplayName}
               timestamp={result.timestamp}
               tampered={result.tampered}
               message={result.message}

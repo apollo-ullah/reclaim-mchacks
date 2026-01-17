@@ -14,6 +14,7 @@ db.pragma("journal_mode = WAL");
 db.exec(`
   CREATE TABLE IF NOT EXISTS creators (
     id TEXT PRIMARY KEY,
+    display_name TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -29,9 +30,20 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_signed_images_hash ON signed_images(original_hash);
 `);
 
+// Migration: Add display_name column if it doesn't exist (for existing DBs)
+try {
+  db.exec(`ALTER TABLE creators ADD COLUMN display_name TEXT`);
+} catch {
+  // Column already exists, ignore
+}
+
 // Prepared statements
 const insertCreator = db.prepare(
-  "INSERT OR IGNORE INTO creators (id) VALUES (?)"
+  "INSERT OR IGNORE INTO creators (id, display_name) VALUES (?, ?)"
+);
+
+const updateCreatorDisplayName = db.prepare(
+  "UPDATE creators SET display_name = ? WHERE id = ?"
 );
 
 const insertSignedImage = db.prepare(
@@ -55,6 +67,7 @@ const getCreatorImageCount = db.prepare(
 // Export functions
 export interface Creator {
   id: string;
+  display_name: string | null;
   created_at: string;
 }
 
@@ -65,18 +78,24 @@ export interface SignedImage {
   signed_at: string;
 }
 
-export function createCreator(creatorId: string): void {
-  insertCreator.run(creatorId);
+export function createCreator(walletAddress: string, displayName?: string): void {
+  insertCreator.run(walletAddress, displayName || null);
+}
+
+export function updateDisplayName(walletAddress: string, displayName: string): void {
+  updateCreatorDisplayName.run(displayName, walletAddress);
+}
+
+export function creatorExists(walletAddress: string): boolean {
+  const creator = getCreator.get(walletAddress) as Creator | undefined;
+  return !!creator;
 }
 
 export function recordSignedImage(
   creatorId: string,
   originalHash: string
 ): number {
-  // Ensure creator exists
-  createCreator(creatorId);
-
-  // Insert the signed image record
+  // Insert the signed image record (creator must exist)
   const result = insertSignedImage.run(creatorId, originalHash);
   return Number(result.lastInsertRowid);
 }

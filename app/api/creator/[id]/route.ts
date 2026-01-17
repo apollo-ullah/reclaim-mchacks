@@ -29,6 +29,7 @@ export async function GET(
 
     return NextResponse.json({
       creator_id: creator.id,
+      display_name: creator.display_name,
       created_at: creator.created_at,
       images: images.map((img) => ({
         id: img.id,
