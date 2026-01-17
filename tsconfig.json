@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
     "outDir": "./dist",
     "rootDir": "./",
     "strict": true,
@@ -10,15 +14,38 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "types": [
+      "node"
+    ],
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "allowJs": true,
+    "noEmit": true,
+    "isolatedModules": true
   },
   "include": [
-    "*.ts"
-, "src/solana/auth.ts"  ],
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist"
   ]
 }
-

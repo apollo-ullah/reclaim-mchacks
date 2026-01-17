@@ -1,4 +1,5 @@
 import { Jimp } from "jimp";
+import { intToRGBA, rgbaToInt } from "./image-utils";
 
 // Magic header to identify our watermarked images
 const MAGIC_HEADER = "RECLAIM_V1:";
@@ -30,25 +31,6 @@ function binaryToString(binary: string): string {
   const bytes = binary.match(/.{8}/g);
   if (!bytes) return "";
   return bytes.map((byte) => String.fromCharCode(parseInt(byte, 2))).join("");
-}
-
-/**
- * Convert integer color to RGBA components
- */
-function intToRGBA(color: number): { r: number; g: number; b: number; a: number } {
-  return {
-    r: (color >> 24) & 0xff,
-    g: (color >> 16) & 0xff,
-    b: (color >> 8) & 0xff,
-    a: color & 0xff,
-  };
-}
-
-/**
- * Convert RGBA components to integer color
- */
-function rgbaToInt(r: number, g: number, b: number, a: number): number {
-  return ((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | (a & 0xff);
 }
 
 /**

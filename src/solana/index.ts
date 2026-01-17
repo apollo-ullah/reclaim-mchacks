@@ -3,6 +3,12 @@
  * Exports all Solana-related functionality
  */
 
+// Shared Utilities
+export {
+  loadPayerKeypair,
+  isValidSolanaAddress
+} from './utils';
+
 // Authentication
 export {
   authenticateWithSolana,

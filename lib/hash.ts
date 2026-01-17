@@ -1,17 +1,6 @@
 import { createHash } from "crypto";
 import { Jimp } from "jimp";
-
-/**
- * Convert integer color to RGBA components
- */
-function intToRGBA(color: number): { r: number; g: number; b: number; a: number } {
-  return {
-    r: (color >> 24) & 0xff,
-    g: (color >> 16) & 0xff,
-    b: (color >> 8) & 0xff,
-    a: color & 0xff,
-  };
-}
+import { intToRGBA } from "./image-utils";
 
 /**
  * Compute SHA-256 hash of image pixel data

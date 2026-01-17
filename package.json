@@ -1,14 +1,17 @@
 {
   "name": "reclaim-mchacks",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Creator-owned media authenticity platform",
+  "private": true,
   "scripts": {
-    "init-tree": "ts-node src/solana/init-tree.ts",
-    "test": "ts-node src/solana/test/run-all.ts",
-    "test:auth": "ts-node src/solana/test/auth.test.ts",
-    "test:mint": "ts-node src/solana/test/mint.test.ts",
-    "test:verify": "ts-node src/solana/test/verify.test.ts"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "init-tree": "npx ts-node src/solana/init-tree.ts",
+    "test": "npx ts-node src/solana/test/run-all.ts",
+    "test:auth": "npx ts-node src/solana/test/auth.test.ts",
+    "test:mint": "npx ts-node src/solana/test/mint.test.ts"
   },
   "repository": {
     "type": "git",
@@ -25,18 +28,29 @@
     "@metaplex-foundation/digital-asset-standard-api": "^2.0.0",
     "@metaplex-foundation/mpl-bubblegum": "^5.0.2",
     "@metaplex-foundation/umi-bundle-defaults": "^1.4.1",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.98.4",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
+    "better-sqlite3": "^11.0.0",
     "bs58": "^6.0.0",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1",
+    "jimp": "^1.1.4",
     "jsonwebtoken": "^9.0.3",
-    "tweetnacl": "^1.0.3",
-    "typescript": "^5.9.3"
+    "next": "^14.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.9",
-    "ts-node": "^10.9.2"
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

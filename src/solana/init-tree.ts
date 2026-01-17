@@ -1,27 +1,25 @@
 /**
  * Tree Initialization Script
  * Run this ONCE to create a Merkle Tree for storing Compressed NFTs
- * 
+ *
  * Usage: npx ts-node src/solana/init-tree.ts
  */
 
 import 'dotenv/config';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { 
-  mplBubblegum, 
-  createTree 
+import {
+  mplBubblegum,
+  createTree
 } from '@metaplex-foundation/mpl-bubblegum';
-import { 
-  keypairIdentity, 
-  generateSigner,
-  percentAmount
+import {
+  keypairIdentity,
+  generateSigner
 } from '@metaplex-foundation/umi';
-import { PublicKey } from '@solana/web3.js';
 import bs58 from 'bs58';
+import { loadPayerKeypair } from './utils';
 
 // Environment Configuration
 const RPC_ENDPOINT = process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com';
-const PAYER_PRIVATE_KEY = process.env.SOLANA_PAYER_PRIVATE_KEY;
 
 // Tree Configuration
 const MAX_DEPTH = 14;        // Supports up to 2^14 = 16,384 assets
@@ -49,33 +47,6 @@ function getTreeConfig(): TreeConfig {
   };
 }
 
-/**
- * Load the backend payer keypair from environment variable
- */
-function loadPayerKeypair(): Uint8Array {
-  if (!PAYER_PRIVATE_KEY) {
-    throw new Error(
-      'Missing SOLANA_PAYER_PRIVATE_KEY in environment variables.\n' +
-      'Generate a keypair: solana-keygen new --outfile ~/.config/solana/devnet.json\n' +
-      'Then export: export SOLANA_PAYER_PRIVATE_KEY="[your base58 private key]"'
-    );
-  }
-
-  try {
-    // Support both base58 string and JSON array format
-    if (PAYER_PRIVATE_KEY.startsWith('[')) {
-      const keyArray = JSON.parse(PAYER_PRIVATE_KEY);
-      return new Uint8Array(keyArray);
-    } else {
-      // Base58 string format
-      return bs58.decode(PAYER_PRIVATE_KEY);
-    }
-  } catch (error) {
-    throw new Error(
-      `Failed to parse SOLANA_PAYER_PRIVATE_KEY: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
-  }
-}
 
 /**
  * Initialize the Merkle Tree on Solana
