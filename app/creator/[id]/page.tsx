@@ -6,6 +6,7 @@ import { CreatorCard, ImageGrid } from "@/components/CreatorCard";
 
 interface CreatorData {
   creator_id: string;
+  display_name: string | null;
   created_at: string;
   images: Array<{
     id: number;
@@ -154,6 +155,7 @@ export default function CreatorPage({
       {/* Creator Card */}
       <CreatorCard
         creatorId={data.creator_id}
+        displayName={data.display_name}
         totalSigned={data.totalSigned}
         createdAt={data.created_at}
       />

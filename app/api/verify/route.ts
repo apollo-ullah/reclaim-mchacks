@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractPayload } from "@/lib/steganography";
+import { getCreatorById } from "@/lib/db";
 
 export interface VerifyResponse {
   verified: boolean;
   creator?: string;
+  creatorDisplayName?: string;
   timestamp?: string;
   tampered?: boolean;
   message: string;
@@ -54,12 +56,17 @@ export async function POST(request: NextRequest) {
     // For MVP, we'll skip the tampering check as it requires the original image
     // In a real implementation, you'd use perceptual hashing or store the original separately
 
+    // Get creator display name from database
+    const creatorData = getCreatorById(payload.c);
+    const displayName = creatorData?.display_name || payload.c;
+
     const response: VerifyResponse = {
       verified: true,
       creator: payload.c,
+      creatorDisplayName: displayName,
       timestamp: new Date(payload.t * 1000).toISOString(),
       tampered: false, // MVP: assume not tampered if signature found
-      message: `Verified - Signed by ${payload.c}`,
+      message: `Verified - Signed by ${displayName}`,
     };
 
     return NextResponse.json(response);

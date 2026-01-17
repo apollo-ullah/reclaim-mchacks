@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { ImageUpload } from "@/components/ImageUpload";
+import { useAuth } from "@/lib/auth-context";
+import Link from "next/link";
 
 interface SignResult {
   success: boolean;
@@ -16,9 +18,9 @@ interface SignResult {
 }
 
 export default function SignPage() {
+  const { creator, isAuthenticated, isLoading: authLoading } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [creatorId, setCreatorId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<SignResult | null>(null);
 
@@ -35,7 +37,7 @@ export default function SignPage() {
   }, []);
 
   const handleSign = async () => {
-    if (!selectedFile || !creatorId.trim()) return;
+    if (!selectedFile || !creator) return;
 
     setIsLoading(true);
     setResult(null);
@@ -43,7 +45,7 @@ export default function SignPage() {
     try {
       const formData = new FormData();
       formData.append("image", selectedFile);
-      formData.append("creator_id", creatorId.trim());
+      formData.append("creator_id", creator.id);
 
       const response = await fetch("/api/sign", {
         method: "POST",
@@ -79,6 +81,56 @@ export default function SignPage() {
     setResult(null);
   };
 
+  // Show auth required message if not authenticated
+  if (authLoading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin mx-auto" />
+          <p className="text-zinc-400 mt-4">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-zinc-100 mb-2">Sign an Image</h1>
+          <p className="text-zinc-400">
+            Embed your invisible watermark to claim ownership
+          </p>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-zinc-100 mb-2">Creator Account Required</h2>
+          <p className="text-zinc-400 mb-6">
+            Create a creator account to start signing your images with your unique identity.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all"
+            >
+              Create Account
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-zinc-800 text-zinc-100 rounded-lg font-medium hover:bg-zinc-700 transition-all border border-zinc-700"
+            >
+              Log In
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
       <div className="text-center mb-8">
@@ -90,6 +142,25 @@ export default function SignPage() {
 
       {!result?.success ? (
         <div className="space-y-6">
+          {/* Creator Info */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                {creator?.display_name?.[0]?.toUpperCase() || "?"}
+              </div>
+              <div>
+                <p className="text-sm text-zinc-400">Signing as</p>
+                <p className="font-medium text-zinc-100">{creator?.display_name}</p>
+              </div>
+              <div className="ml-auto text-right">
+                <p className="text-xs text-zinc-500">Wallet</p>
+                <p className="text-xs font-mono text-zinc-400">
+                  {creator?.id.slice(0, 6)}...{creator?.id.slice(-4)}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Image Upload */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
             <label className="block text-sm font-medium text-zinc-300 mb-3">
@@ -102,29 +173,6 @@ export default function SignPage() {
             />
           </div>
 
-          {/* Creator ID Input */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <label
-              htmlFor="creatorId"
-              className="block text-sm font-medium text-zinc-300 mb-3"
-            >
-              Creator ID
-            </label>
-            <input
-              type="text"
-              id="creatorId"
-              value={creatorId}
-              onChange={(e) => setCreatorId(e.target.value)}
-              placeholder="e.g., your@email.com or @username"
-              disabled={isLoading}
-              className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-            />
-            <p className="mt-2 text-xs text-zinc-500">
-              This will be embedded in your image and publicly visible when
-              verified
-            </p>
-          </div>
-
           {/* Error Message */}
           {result?.error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
@@ -135,7 +183,7 @@ export default function SignPage() {
           {/* Sign Button */}
           <button
             onClick={handleSign}
-            disabled={!selectedFile || !creatorId.trim() || isLoading}
+            disabled={!selectedFile || !creator || isLoading}
             className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? (

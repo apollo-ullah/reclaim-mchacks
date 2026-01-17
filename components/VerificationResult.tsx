@@ -5,6 +5,7 @@ import Link from "next/link";
 interface VerificationResultProps {
   verified: boolean;
   creator?: string;
+  creatorDisplayName?: string;
   timestamp?: string;
   tampered?: boolean;
   message: string;
@@ -13,10 +14,15 @@ interface VerificationResultProps {
 export function VerificationResult({
   verified,
   creator,
+  creatorDisplayName,
   timestamp,
   tampered,
   message,
 }: VerificationResultProps) {
+  // Use display name if available, otherwise show shortened wallet address
+  const displayCreator = creatorDisplayName || (creator && creator.length > 20
+    ? `${creator.slice(0, 6)}...${creator.slice(-4)}`
+    : creator);
   if (verified && !tampered) {
     return (
       <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 space-y-4">
@@ -49,7 +55,7 @@ export function VerificationResult({
               href={`/creator/${encodeURIComponent(creator || "")}`}
               className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
             >
-              {creator}
+              {displayCreator}
             </Link>
           </div>
           {timestamp && (
@@ -108,7 +114,7 @@ export function VerificationResult({
                 href={`/creator/${encodeURIComponent(creator)}`}
                 className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
               >
-                {creator}
+                {displayCreator}
               </Link>
             </div>
           </div>

@@ -8,24 +8,34 @@ interface SignedImageData {
 
 interface CreatorCardProps {
   creatorId: string;
+  displayName?: string | null;
   totalSigned: number;
   createdAt: string;
 }
 
 export function CreatorCard({
   creatorId,
+  displayName,
   totalSigned,
   createdAt,
 }: CreatorCardProps) {
+  const name = displayName || creatorId;
+  const isWalletAddress = creatorId.length > 30;
+
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white">
-          {creatorId.charAt(0).toUpperCase()}
+          {name.charAt(0).toUpperCase()}
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-zinc-100">{creatorId}</h2>
-          <p className="text-zinc-500 text-sm">
+          <h2 className="text-xl font-semibold text-zinc-100">{name}</h2>
+          {isWalletAddress && (
+            <p className="text-xs font-mono text-zinc-500 mt-1">
+              {creatorId.slice(0, 8)}...{creatorId.slice(-8)}
+            </p>
+          )}
+          <p className="text-zinc-500 text-sm mt-1">
             Member since{" "}
             {new Date(createdAt).toLocaleDateString("en-US", {
               year: "numeric",
