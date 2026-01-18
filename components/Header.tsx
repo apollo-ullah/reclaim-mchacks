@@ -14,7 +14,7 @@ export function Header() {
   };
 
   return (
-    <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-sm sticky top-0 z-50">
+    <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-sm sticky top-0 z-50 glow-header">
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
         <Logo size="lg" />
 
@@ -22,14 +22,14 @@ export function Header() {
           {isAuthenticated && (
             <Link
               href="/sign"
-              className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+              className="text-sm text-zinc-400 hover:text-zinc-100 glow-link"
             >
               Sign
             </Link>
           )}
           <Link
             href="/verify"
-            className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+            className="text-sm text-zinc-400 hover:text-zinc-100 glow-link"
           >
             Verify
           </Link>
@@ -41,9 +41,9 @@ export function Header() {
             <div className="relative group">
               <Link
                 href={`/creator/${creator.id}`}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-800 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-800 transition-all"
               >
-                <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-xs text-white font-medium glow-avatar">
                   {creator.display_name?.[0]?.toUpperCase() || "?"}
                 </div>
                 <span className="hidden sm:inline text-sm text-zinc-200">
@@ -62,15 +62,17 @@ export function Header() {
                 <div className="p-1">
                   <Link
                     href={`/creator/${creator.id}`}
-                    className="block px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded transition-colors"
+                    className="block px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded transition-all relative overflow-hidden group/item"
                   >
-                    View Profile
+                    <span className="relative z-10">View Profile</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-600/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded transition-all relative overflow-hidden group/item"
                   >
-                    Log Out
+                    <span className="relative z-10">Log Out</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-600/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   </button>
                 </div>
               </div>
@@ -80,15 +82,15 @@ export function Header() {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors hidden sm:inline"
+                className="text-sm text-zinc-400 hover:text-zinc-100 glow-link hidden sm:inline"
               >
                 Log in
               </Link>
               <Link
                 href="/signup"
-                className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all"
+                className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 glow-button relative"
               >
-                Sign Up
+                <span className="relative z-10">Sign Up</span>
               </Link>
             </div>
           )}
