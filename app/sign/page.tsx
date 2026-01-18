@@ -1,22 +1,28 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ImageUpload } from "@/components/ImageUpload";
+import { MediaUpload } from "@/components/MediaUpload";
 import { useAuth } from "@/lib/auth-context";
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { Download, PenTool, RotateCcw, Sparkles, ShieldCheck } from "lucide-react";
+import { Download, PenTool, RotateCcw, Sparkles, ShieldCheck, Film } from "lucide-react";
 
 type SourceType = "authentic" | "ai";
+type MediaType = "image" | "video";
 
 interface SignResult {
   success: boolean;
   signedImageBase64?: string;
+  signedVideoBase64?: string;
+  mediaType?: MediaType;
   metadata?: {
     creatorId: string;
     timestamp: string;
     originalHash: string;
     version: number;
     sourceType: SourceType;
+    duration?: number;
+    c2paApplied?: boolean;
+    note?: string;
   };
   error?: string;
 }
@@ -25,13 +31,17 @@ export default function SignPage() {
   const { creator } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<MediaType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<SignResult | null>(null);
   const [sourceType, setSourceType] = useState<SourceType>("authentic");
 
-  const handleImageSelect = useCallback((file: File) => {
+  const handleFileSelect = useCallback((file: File) => {
     setSelectedFile(file);
     setResult(null);
+
+    const isVideo = file.type.startsWith("video/");
+    setMediaType(isVideo ? "video" : "image");
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -62,7 +72,7 @@ export default function SignPage() {
     } catch {
       setResult({
         success: false,
-        error: "Failed to sign image. Please try again.",
+        error: "Failed to sign file. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -70,11 +80,17 @@ export default function SignPage() {
   };
 
   const handleDownload = () => {
-    if (!result?.signedImageBase64) return;
+    const isVideo = result?.mediaType === "video";
+    const base64Data = isVideo ? result?.signedVideoBase64 : result?.signedImageBase64;
+
+    if (!base64Data) return;
 
     const link = document.createElement("a");
-    link.href = `data:image/png;base64,${result.signedImageBase64}`;
-    link.download = `reclaim-signed-${Date.now()}.png`;
+    const mimeType = isVideo ? "video/mp4" : "image/png";
+    const extension = isVideo ? "mp4" : "png";
+
+    link.href = `data:${mimeType};base64,${base64Data}`;
+    link.download = `reclaim-signed-${Date.now()}.${extension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -83,13 +99,24 @@ export default function SignPage() {
   const handleReset = () => {
     setSelectedFile(null);
     setPreview(null);
+    setMediaType(null);
     setResult(null);
     setSourceType("authentic");
   };
 
+  const getSignedPreview = () => {
+    if (result?.mediaType === "video" && result.signedVideoBase64) {
+      return `data:video/mp4;base64,${result.signedVideoBase64}`;
+    }
+    if (result?.signedImageBase64) {
+      return `data:image/png;base64,${result.signedImageBase64}`;
+    }
+    return null;
+  };
+
   return (
     <DashboardLayout
-      title="Sign Image"
+      title="Sign Media"
       description="Embed your invisible watermark to prove ownership"
     >
       <div className="max-w-2xl">
@@ -199,7 +226,7 @@ export default function SignPage() {
               </div>
             </div>
 
-            {/* Image Upload */}
+            {/* Media Upload */}
             <div
               className="rounded-2xl border border-[#1E293B] p-6"
               style={{
@@ -208,12 +235,14 @@ export default function SignPage() {
               }}
             >
               <label className="block text-sm font-medium text-[#94A3B8] mb-3">
-                Select Image
+                Select Image or Video
               </label>
-              <ImageUpload
-                onImageSelect={handleImageSelect}
+              <MediaUpload
+                onFileSelect={handleFileSelect}
                 preview={preview}
+                mediaType={mediaType}
                 disabled={isLoading}
+                acceptVideo={true}
               />
             </div>
 
@@ -247,7 +276,7 @@ export default function SignPage() {
               ) : (
                 <>
                   <PenTool className="w-5 h-5 relative z-10" />
-                  <span className="relative z-10">Sign Image</span>
+                  <span className="relative z-10">Sign {mediaType === "video" ? "Video" : "Media"}</span>
                 </>
               )}
               <div className="absolute inset-0 bg-gradient-to-br from-[#4F7CFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -268,7 +297,7 @@ export default function SignPage() {
                 <div>
                   <p className="text-sm text-amber-400 font-medium">Output Format</p>
                   <p className="text-xs text-[#94A3B8] mt-1">
-                    Signed images are always saved as PNG to preserve the watermark. JPEG compression can destroy the hidden data.
+                    Images are saved as PNG. Videos keep MP4 format with watermark on first frame. Max video length: 10 seconds.
                   </p>
                 </div>
               </div>
@@ -298,23 +327,53 @@ export default function SignPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-emerald-400 text-lg">Image Signed Successfully</h3>
-                  <p className="text-sm text-[#94A3B8]">Your watermark has been embedded</p>
+                  <h3 className="font-bold text-emerald-400 text-lg">
+                    {result.mediaType === "video" ? "Video" : "Image"} Signed Successfully
+                  </h3>
+                  <p className="text-sm text-[#94A3B8]">
+                    {result.mediaType === "video"
+                      ? "Watermark embedded in first frame"
+                      : "Your watermark has been embedded"}
+                  </p>
                 </div>
               </div>
 
-              {/* Signed Image Preview */}
+              {/* Signed Media Preview */}
               <div className="bg-[#0B0F1A] rounded-xl p-4 mb-6">
-                <img
-                  src={`data:image/png;base64,${result.signedImageBase64}`}
-                  alt="Signed image"
-                  className="max-h-64 mx-auto rounded-lg"
-                  style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
-                />
+                {result.mediaType === "video" ? (
+                  <video
+                    src={getSignedPreview() || undefined}
+                    className="max-h-64 mx-auto rounded-lg"
+                    style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
+                    controls
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    src={getSignedPreview() || undefined}
+                    alt="Signed media"
+                    className="max-h-64 mx-auto rounded-lg"
+                    style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
+                  />
+                )}
               </div>
 
               {/* Metadata */}
               <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#6B7280]">Media Type</span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                    {result.mediaType === "video" ? (
+                      <>
+                        <Film className="w-3 h-3" />
+                        Video
+                      </>
+                    ) : (
+                      "Image"
+                    )}
+                  </span>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[#6B7280]">Creator</span>
                   <span className="text-white font-medium">{result.metadata?.creatorId}</span>
@@ -345,10 +404,21 @@ export default function SignPage() {
                     {result.metadata?.timestamp && new Date(result.metadata.timestamp).toLocaleString()}
                   </span>
                 </div>
+                {result.metadata?.duration && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#6B7280]">Duration</span>
+                    <span className="text-white font-medium">{result.metadata.duration.toFixed(1)}s</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#6B7280]">Image Hash</span>
+                  <span className="text-[#6B7280]">Hash</span>
                   <span className="font-mono text-[#94A3B8]">{result.metadata?.originalHash}</span>
                 </div>
+                {result.metadata?.note && (
+                  <div className="pt-2 border-t border-[#1E293B]">
+                    <p className="text-xs text-[#6B7280] italic">{result.metadata.note}</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -365,7 +435,7 @@ export default function SignPage() {
                 }}
               >
                 <Download className="w-5 h-5 relative z-10" />
-                <span className="relative z-10">Download Signed Image</span>
+                <span className="relative z-10">Download Signed {result.mediaType === "video" ? "Video" : "Image"}</span>
                 <div className="absolute inset-0 bg-gradient-to-br from-[#4F7CFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
               <button

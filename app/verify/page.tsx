@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Upload, FileImage, Loader2, RotateCcw, Bug, Zap, Binary } from "lucide-react"
+import { Upload, FileImage, Loader2, RotateCcw, Bug, Zap, Binary, Film } from "lucide-react"
 import { VerificationResult } from "@/components/VerificationResult"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Navbar } from "@/components/navbar"
@@ -15,6 +15,8 @@ interface VerifyResponse {
   tampered?: boolean
   sourceType?: "authentic" | "ai"
   message: string
+  mediaType?: "image" | "video"
+  duration?: number
   c2pa?: {
     found: boolean
     valid?: boolean
@@ -24,10 +26,14 @@ interface VerifyResponse {
   }
 }
 
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+const VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
+
 function VerifyContent() {
   const [isDragging, setIsDragging] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [mediaType, setMediaType] = useState<"image" | "video" | null>(null)
   const [isVerifying, setIsVerifying] = useState(false)
   const [result, setResult] = useState<VerifyResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -50,9 +56,9 @@ function VerifyContent() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Apply tampering to the current image
+  // Apply tampering to the current image (only for images)
   const handleTamper = async (mode: 'byte' | 'pixel') => {
-    if (!file) return
+    if (!file || mediaType !== 'image') return
 
     setIsTampering(true)
     setTamperMessage(null)
@@ -104,13 +110,19 @@ function VerifyContent() {
     setIsDragging(false)
   }
 
+  const isValidFile = (file: File) => {
+    return IMAGE_TYPES.includes(file.type) || VIDEO_TYPES.includes(file.type)
+  }
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
     const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile && isImageFile(droppedFile)) {
+    if (droppedFile && isValidFile(droppedFile)) {
+      const isVideo = VIDEO_TYPES.includes(droppedFile.type)
       setFile(droppedFile)
       setPreview(URL.createObjectURL(droppedFile))
+      setMediaType(isVideo ? "video" : "image")
       setResult(null)
       setError(null)
     }
@@ -118,16 +130,14 @@ function VerifyContent() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
-    if (selectedFile && isImageFile(selectedFile)) {
+    if (selectedFile && isValidFile(selectedFile)) {
+      const isVideo = VIDEO_TYPES.includes(selectedFile.type)
       setFile(selectedFile)
       setPreview(URL.createObjectURL(selectedFile))
+      setMediaType(isVideo ? "video" : "image")
       setResult(null)
       setError(null)
     }
-  }
-
-  const isImageFile = (file: File) => {
-    return ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.type)
   }
 
   const handleVerify = async () => {
@@ -149,7 +159,7 @@ function VerifyContent() {
       const data: VerifyResponse = await response.json()
       setResult(data)
     } catch (err) {
-      setError('Failed to verify image. Please try again.')
+      setError('Failed to verify file. Please try again.')
       console.error('Verification error:', err)
     } finally {
       setIsVerifying(false)
@@ -159,6 +169,7 @@ function VerifyContent() {
   const handleReset = () => {
     setFile(null)
     setPreview(null)
+    setMediaType(null)
     setResult(null)
     setError(null)
     setTamperMessage(null)
@@ -186,7 +197,7 @@ function VerifyContent() {
             <div className="w-16 h-16 rounded-full border-2 border-[#374151] flex items-center justify-center mb-5">
               <Upload className="w-8 h-8 text-[#6b7280]" />
             </div>
-            <p className="text-white font-semibold text-lg mb-1">Drop your image here</p>
+            <p className="text-white font-semibold text-lg mb-1">Drop your file here</p>
             <p className="text-[#94a3b8] mb-6 text-sm">or click to browse your files</p>
             <button
               onClick={(e) => {
@@ -202,13 +213,13 @@ function VerifyContent() {
               }}
             >
               <FileImage className="w-5 h-5 relative z-10" />
-              <span className="relative z-10">Select Image</span>
+              <span className="relative z-10">Select File</span>
               <div className="absolute inset-0 bg-gradient-to-br from-[#4F7CFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
             <input
               ref={inputRef}
               type="file"
-              accept="image/png,image/jpeg,image/jpg,image/webp"
+              accept="image/png,image/jpeg,image/jpg,image/webp,video/mp4,video/quicktime,video/webm"
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -216,13 +227,13 @@ function VerifyContent() {
 
           <div className="absolute bottom-4 left-0 right-0 text-center">
             <p className="text-[#6b7280] text-xs">
-              Supports PNG, JPEG, JPG, WebP
+              Supports PNG, JPEG, WebP, MP4, MOV, WebM (videos max 10s)
             </p>
           </div>
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Image Preview */}
+          {/* Media Preview */}
           <div
             className="rounded-2xl border border-[#1e293b] p-6"
             style={{
@@ -233,31 +244,54 @@ function VerifyContent() {
             <div className="flex flex-col md:flex-row gap-6">
               {preview && (
                 <div className="flex-shrink-0">
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="max-w-full md:max-w-[200px] max-h-48 rounded-xl object-contain"
-                    style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
-                  />
+                  {mediaType === "video" ? (
+                    <video
+                      src={preview}
+                      className="max-w-full md:max-w-[200px] max-h-48 rounded-xl object-contain"
+                      style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
+                      controls
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="max-w-full md:max-w-[200px] max-h-48 rounded-xl object-contain"
+                      style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
+                    />
+                  )}
                 </div>
               )}
               <div className="flex-1 space-y-4">
                 <div>
-                  <h3 className="text-white font-semibold mb-2">Image Details</h3>
+                  <h3 className="text-white font-semibold mb-2">File Details</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center">
                       <span className="text-[#94a3b8]">Filename</span>
                       <span className="text-white font-medium truncate max-w-[200px]">{file.name}</span>
                     </div>
                     <div className="flex justify-between items-center">
+                      <span className="text-[#94a3b8]">Type</span>
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                        {mediaType === "video" ? (
+                          <>
+                            <Film className="w-3 h-3" />
+                            Video
+                          </>
+                        ) : (
+                          <>
+                            <FileImage className="w-3 h-3" />
+                            Image
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
                       <span className="text-[#94a3b8]">Size</span>
                       <span className="text-white font-medium">
                         {(file.size / (1024 * 1024)).toFixed(2)} MB
                       </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[#94a3b8]">Type</span>
-                      <span className="text-white font-medium">{file.type}</span>
                     </div>
                   </div>
                 </div>
@@ -280,7 +314,7 @@ function VerifyContent() {
                         <span className="relative z-10">Verifying...</span>
                       </>
                     ) : (
-                      <span className="relative z-10">Verify Image</span>
+                      <span className="relative z-10">Verify {mediaType === "video" ? "Video" : "Image"}</span>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-br from-[#4F7CFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
@@ -291,25 +325,27 @@ function VerifyContent() {
                   >
                     <RotateCcw className="w-5 h-5" />
                   </button>
-                  {/* Dev tools toggle button - discrete */}
-                  <button
-                    onClick={() => setShowDevTools(prev => !prev)}
-                    className={`px-4 py-3 rounded-[14px] font-medium transition-all ${
-                      showDevTools
-                        ? 'border border-orange-500/30 bg-orange-500/10 text-orange-400'
-                        : 'border border-[#1E293B] bg-[#0B0F1A] text-[#6B7280] hover:text-[#94A3B8]'
-                    }`}
-                    title="Toggle Dev Tools (Ctrl+Shift+D)"
-                  >
-                    <Bug className="w-5 h-5" />
-                  </button>
+                  {/* Dev tools toggle button - discrete (only for images) */}
+                  {mediaType === "image" && (
+                    <button
+                      onClick={() => setShowDevTools(prev => !prev)}
+                      className={`px-4 py-3 rounded-[14px] font-medium transition-all ${
+                        showDevTools
+                          ? 'border border-orange-500/30 bg-orange-500/10 text-orange-400'
+                          : 'border border-[#1E293B] bg-[#0B0F1A] text-[#6B7280] hover:text-[#94A3B8]'
+                      }`}
+                      title="Toggle Dev Tools (Ctrl+Shift+D)"
+                    >
+                      <Bug className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Dev Tools Panel */}
-          {showDevTools && (
+          {/* Dev Tools Panel (only for images) */}
+          {showDevTools && mediaType === "image" && (
             <div
               className="rounded-2xl border border-orange-500/30 p-4 animate-in fade-in slide-in-from-top-2 duration-300"
               style={{ background: 'rgba(249, 115, 22, 0.05)' }}
@@ -405,8 +441,8 @@ export default function VerifyPage() {
   if (isAuthenticated) {
     return (
       <DashboardLayout
-        title="Verify Image"
-        description="Check if an image has been signed and verify its authenticity"
+        title="Verify Media"
+        description="Check if an image or video has been signed and verify its authenticity"
       >
         <VerifyContent />
       </DashboardLayout>
@@ -432,8 +468,8 @@ export default function VerifyPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">Verify Image</h1>
-              <p className="text-[#94a3b8] text-lg">Upload an image to check its authenticity</p>
+              <h1 className="text-3xl font-bold text-white">Verify Media</h1>
+              <p className="text-[#94a3b8] text-lg">Upload an image or video to check its authenticity</p>
             </div>
           </div>
           <VerifyContent />
