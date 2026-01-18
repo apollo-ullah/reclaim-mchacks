@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Reclaim is a steganography-based image authentication platform that embeds invisible watermarks into images to prove creator provenance. It combines LSB (Least Significant Bit) watermarking with Solana blockchain integration for immutable provenance records via compressed NFTs.
+Reclaim is a steganography-based image authentication platform that embeds invisible watermarks into images to prove creator provenance. It combines LSB (Least Significant Bit) watermarking, C2PA (Content Credentials) standards, and Solana blockchain integration for immutable provenance records via compressed NFTs.
 
 ## Commands
 
@@ -39,6 +39,11 @@ npm run test:mint        # Test minting module only
   - `steganography.ts` - LSB watermark embed/extract (2 bits/pixel in blue/green channels)
   - `db.ts` - MongoDB operations (mongoose with connection caching for serverless)
   - `auth-context.tsx` - React context for wallet auth state
+  - `c2pa/` - C2PA (Content Credentials) implementation
+    - `signer.ts` - Sign images with embedded provenance manifest
+    - `verifier.ts` - Verify and extract C2PA manifests
+    - `config.ts` - Certificate paths and configuration
+    - `types.ts` - TypeScript interfaces for C2PA data
 - `src/solana/` - Blockchain integration
   - `auth.ts` - Sign-In with Solana (SIWS) + JWT auth
   - `mint.ts` - Compressed NFT minting via Metaplex Bubblegum
@@ -86,3 +91,26 @@ This is intentional "tamper evidence" - if the watermark is destroyed, the image
 **Wallet connection** must be client-side only - use `useState`/`useEffect` pattern to prevent SSR errors.
 
 **Solana minting** requires `init-tree` to be run first to create the Merkle tree address.
+
+## C2PA (Content Credentials)
+
+C2PA provides industry-standard content provenance that survives re-encoding (unlike LSB steganography).
+
+**Setup:** Run `./scripts/generate-c2pa-certs.sh` to generate certificates in `certs/` directory.
+
+**Usage:**
+```typescript
+import { signImage, verifyImage } from '@/lib/c2pa';
+
+// Sign with C2PA manifest
+await signImage('input.jpg', 'output.jpg', {
+  author: 'Creator Name',
+  txId: 'solana_transaction_hash'
+});
+
+// Verify and extract manifest
+const manifest = await verifyImage('output.jpg');
+// { author, txId, timestamp, isValid, validationStatus }
+```
+
+**C2PA vs LSB:** Use C2PA for robust provenance that survives compression. Use LSB for tamper-evidence (destroyed if image modified).
