@@ -1,9 +1,49 @@
 "use client"
 
-import React, { useRef, useState, useCallback } from "react"
+import React, { useRef, useState, useCallback, useEffect } from "react"
 
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+
+// Glitch text component that plays animation on mount
+function GlitchText({ 
+  children, 
+  delay = 0,
+  className = ""
+}: { 
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const [isGlitching, setIsGlitching] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    // Start hidden, then trigger glitch after delay
+    const showTimer = setTimeout(() => {
+      setIsVisible(true)
+      setIsGlitching(true)
+    }, delay)
+
+    const stopTimer = setTimeout(() => {
+      setIsGlitching(false)
+    }, delay + 800)
+
+    return () => {
+      clearTimeout(showTimer)
+      clearTimeout(stopTimer)
+    }
+  }, [delay])
+
+  return (
+    <span 
+      className={`glitch-text ${isGlitching ? 'glitching' : ''} ${isVisible ? 'visible' : ''} ${className}`}
+      data-text={typeof children === 'string' ? children : ''}
+    >
+      {children}
+    </span>
+  )
+}
 
 function GlowText({ text }: { text: string }) {
   const containerRef = useRef<HTMLSpanElement>(null)
@@ -221,17 +261,24 @@ export function HeroSection() {
           {/* Left side - Content */}
           <div className="space-y-7 pt-12">
             <div className="inline-block">
-              <span className="text-[#6B7280] text-sm font-normal tracking-wide">[ 150+ organizations ]</span>
+              <GlitchText delay={100} className="text-[#6B7280] text-sm font-normal tracking-wide">
+                [ 150+ organizations ]
+              </GlitchText>
             </div>
 
             <h1 className="text-[64px] leading-[1.1] font-bold text-white tracking-tight cursor-default">
-              <GlowText text="Verify Content" /><br />
-              <GlowText text="Beyond Boundaries" />
+              <GlitchText delay={250}>
+                <GlowText text="Verify Content" />
+              </GlitchText>
+              <br />
+              <GlitchText delay={400}>
+                <GlowText text="Beyond Boundaries" />
+              </GlitchText>
             </h1>
 
-            <p className="text-[#94A3B8] text-[18px] max-w-[550px] leading-relaxed font-normal">
+            <GlitchText delay={550} className="text-[#94A3B8] text-[18px] max-w-[550px] leading-relaxed font-normal block">
               Simplified Image Authentication with Unrivaled Content Verification via Reclaim
-            </p>
+            </GlitchText>
 
             <div className="flex flex-wrap gap-4 pt-4">
               <Link
