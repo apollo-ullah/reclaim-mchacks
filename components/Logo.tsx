@@ -20,18 +20,20 @@ export function Logo({ size = "md", showText = true, className = "" }: LogoProps
   const { icon, text, gap } = sizes[size]
 
   return (
-    <Link href="/" className={`flex items-center ${gap} ${className}`}>
-      <Image
-        src="/reclaim_icon.png"
-        alt="Reclaim"
-        width={icon}
-        height={icon}
-        className="object-contain"
-        style={{ imageRendering: "pixelated" }}
-        priority
-      />
+    <Link href="/" className={`flex items-center ${gap} ${className} group transition-all`}>
+      <div className="relative">
+        <Image
+          src="/reclaim_icon.png"
+          alt="Reclaim"
+          width={icon}
+          height={icon}
+          className="object-contain transition-all group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+          style={{ imageRendering: "pixelated" }}
+          priority
+        />
+      </div>
       {showText && (
-        <span className={`font-semibold text-white tracking-tight ${text}`}>
+        <span className={`font-semibold text-white tracking-tight ${text} transition-all group-hover:text-shadow-[0_0_10px_rgba(59,130,246,0.5)]`}>
           Reclaim
         </span>
       )}

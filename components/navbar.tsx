@@ -24,7 +24,7 @@ export function Navbar() {
         <Logo size="lg" />
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center bg-[#0B0F1A]/60 backdrop-blur-xl rounded-full px-2 py-2 border border-[#1E293B]/60">
+        <nav className="hidden md:flex items-center bg-[#0B0F1A]/60 backdrop-blur-xl rounded-full px-2 py-2 border border-[#1E293B]/60 glow-navbar">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -44,7 +44,7 @@ export function Navbar() {
         {/* Contact Button */}
         <Link
           href="/contact"
-          className="hidden md:flex items-center px-6 py-2.5 rounded-full border border-[#1E293B] text-white text-[15px] font-medium hover:bg-[#1E293B]/50 transition-colors"
+          className="hidden md:flex items-center px-6 py-2.5 rounded-full border border-[#1E293B] text-white text-[15px] font-medium hover:bg-[#1E293B]/50 transition-colors glow-navbar"
         >
           Contact Us
         </Link>

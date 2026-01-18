@@ -128,6 +128,205 @@
   .bg-gradient-radial {
     background: radial-gradient(circle, var(--tw-gradient-stops));
   }
+  
+  /* Modern glowing hover effects */
+  .glow-link {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glow-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, transparent);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-50%);
+    opacity: 0;
+    box-shadow: 0 0 8px #3b82f6;
+    pointer-events: none;
+  }
+  
+  .glow-link:hover::after {
+    width: 100%;
+    opacity: 1;
+  }
+  
+  .glow-link:hover {
+    text-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+  }
+  
+  .glow-button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .glow-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  
+  .glow-button:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .glow-button:hover {
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.4),
+      0 0 40px rgba(139, 92, 246, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  .glow-avatar {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .glow-avatar::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .glow-avatar:hover::before {
+    opacity: 1;
+    animation: glow-rotate 3s linear infinite;
+  }
+  
+  .glow-avatar:hover {
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.4),
+      0 0 30px rgba(139, 92, 246, 0.2);
+  }
+  
+  @keyframes glow-rotate {
+    0% {
+      filter: hue-rotate(0deg);
+    }
+    100% {
+      filter: hue-rotate(360deg);
+    }
+  }
+  
+  /* Header glow effect */
+  .glow-header {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .glow-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%,
+      rgba(59, 130, 246, 0) 5%,
+      rgba(59, 130, 246, 0.4) 25%,
+      rgba(139, 92, 246, 0.6) 50%,
+      rgba(59, 130, 246, 0.4) 75%,
+      rgba(59, 130, 246, 0) 95%,
+      transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.5),
+      0 0 40px rgba(139, 92, 246, 0.3);
+    pointer-events: none;
+  }
+  
+  .glow-header:hover::after {
+    opacity: 1;
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes glow-pulse {
+    0%, 100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  
+  /* Navbar contour glow effect */
+  .glow-navbar {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .glow-navbar::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0) 0%,
+      rgba(59, 130, 246, 0.6) 25%,
+      rgba(139, 92, 246, 0.8) 50%,
+      rgba(59, 130, 246, 0.6) 75%,
+      rgba(59, 130, 246, 0) 100%
+    );
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  
+  .glow-navbar:hover::before {
+    opacity: 1;
+    animation: glow-rotate-slow 4s linear infinite;
+  }
+  
+  .glow-navbar:hover {
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.3),
+      0 0 40px rgba(139, 92, 246, 0.2),
+      inset 0 0 20px rgba(59, 130, 246, 0.05);
+  }
+  
+  @keyframes glow-rotate-slow {
+    0% {
+      filter: hue-rotate(0deg);
+    }
+    100% {
+      filter: hue-rotate(360deg);
+    }
+  }
 }
 
 @keyframes float-icon {
