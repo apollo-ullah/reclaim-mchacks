@@ -283,7 +283,7 @@ export function HeroSection() {
             <div className="flex flex-wrap gap-4 pt-4">
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2.5 px-8 py-3.5 text-white rounded-[14px] font-medium transition-all relative overflow-hidden group"
+                className="inline-flex items-center gap-2.5 px-8 py-3.5 text-white rounded-[14px] font-medium transition-all relative group glow-navbar"
                 style={{
                   background: 'rgba(79, 124, 255, 0.15)',
                   backdropFilter: 'blur(12px)',
@@ -293,13 +293,10 @@ export function HeroSection() {
               >
                 <span className="relative z-10">Get Started</span>
                 <ArrowRight className="w-4 h-4 relative z-10" />
-                <div
-                  className="absolute inset-0 bg-gradient-to-br from-[#4F7CFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
-                />
               </Link>
               <Link
                 href="/verify"
-                className="inline-flex items-center px-8 py-3.5 border border-[#1E293B] bg-[#0B0F1A] text-[#94A3B8] rounded-[14px] font-medium hover:bg-[#1E293B]/50 hover:text-white transition-all"
+                className="inline-flex items-center px-8 py-3.5 border border-[#1E293B] bg-[#0B0F1A] text-[#94A3B8] rounded-[14px] font-medium hover:text-white transition-all glow-navbar"
               >
                 Verify an Image
               </Link>
