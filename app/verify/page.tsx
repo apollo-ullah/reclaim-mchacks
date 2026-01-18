@@ -5,6 +5,7 @@ import { Upload, FileImage, Loader2, RotateCcw, Bug, Zap, Binary } from "lucide-
 import { VerificationResult } from "@/components/VerificationResult"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Navbar } from "@/components/navbar"
+import { Aurora } from "@/components/Aurora"
 import { useAuth } from "@/lib/auth-context"
 
 interface VerifyResponse {
@@ -415,9 +416,10 @@ export default function VerifyPage() {
 
   // Public users see regular navbar
   return (
-    <main className="min-h-screen bg-[#0B0F1A]">
+    <main className="min-h-screen bg-[#0B0F1A] relative">
+      <Aurora />
       <Navbar />
-      <div className="pt-28 px-6 pb-16">
+      <div className="pt-28 px-6 pb-16 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
             <div

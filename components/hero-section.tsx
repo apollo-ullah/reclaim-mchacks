@@ -1,9 +1,142 @@
 "use client"
 
-import React from "react"
+import React, { useRef, useState, useCallback, useEffect } from "react"
 
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+
+// Glitch text component that plays animation on mount
+function GlitchText({ 
+  children, 
+  delay = 0,
+  className = ""
+}: { 
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const [isGlitching, setIsGlitching] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    // Start hidden, then trigger glitch after delay
+    const showTimer = setTimeout(() => {
+      setIsVisible(true)
+      setIsGlitching(true)
+    }, delay)
+
+    const stopTimer = setTimeout(() => {
+      setIsGlitching(false)
+    }, delay + 800)
+
+    return () => {
+      clearTimeout(showTimer)
+      clearTimeout(stopTimer)
+    }
+  }, [delay])
+
+  return (
+    <span 
+      className={`glitch-text ${isGlitching ? 'glitching' : ''} ${isVisible ? 'visible' : ''} ${className}`}
+      data-text={typeof children === 'string' ? children : ''}
+    >
+      {children}
+    </span>
+  )
+}
+
+function GlowText({ text }: { text: string }) {
+  const containerRef = useRef<HTMLSpanElement>(null)
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null)
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setMousePos(null)
+  }, [])
+
+  return (
+    <span
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="inline"
+    >
+      {text.split('').map((char, i) => (
+        <GlowChar key={i} char={char} index={i} mousePos={mousePos} containerRef={containerRef} />
+      ))}
+    </span>
+  )
+}
+
+function GlowChar({ 
+  char, 
+  index, 
+  mousePos, 
+  containerRef 
+}: { 
+  char: string
+  index: number
+  mousePos: { x: number; y: number } | null
+  containerRef: React.RefObject<HTMLSpanElement | null>
+}) {
+  const charRef = useRef<HTMLSpanElement>(null)
+  
+  let opacity = 0
+  
+  if (mousePos && charRef.current && containerRef.current) {
+    const charRect = charRef.current.getBoundingClientRect()
+    const containerRect = containerRef.current.getBoundingClientRect()
+    
+    const charCenterX = charRect.left - containerRect.left + charRect.width / 2
+    const charCenterY = charRect.top - containerRect.top + charRect.height / 2
+    
+    const distance = Math.sqrt(
+      Math.pow(mousePos.x - charCenterX, 2) + 
+      Math.pow(mousePos.y - charCenterY, 2)
+    )
+    
+    const maxDistance = 120
+    opacity = Math.max(0, 1 - distance / maxDistance)
+  }
+
+  // Contour glow using the navbar gradient colors (blue -> purple -> pink)
+  const glowShadow = opacity > 0 
+    ? [
+        // Tight outline glow - blue
+        `0 0 1px rgba(59, 130, 246, ${opacity})`,
+        `-1px -1px 2px rgba(59, 130, 246, ${opacity * 0.8})`,
+        `1px 1px 2px rgba(139, 92, 246, ${opacity * 0.8})`,
+        // Medium glow - purple
+        `0 0 4px rgba(139, 92, 246, ${opacity * 0.7})`,
+        `-2px -1px 6px rgba(59, 130, 246, ${opacity * 0.5})`,
+        `2px 1px 6px rgba(236, 72, 153, ${opacity * 0.5})`,
+        // Outer glow - pink
+        `0 0 12px rgba(139, 92, 246, ${opacity * 0.4})`,
+        `0 0 20px rgba(236, 72, 153, ${opacity * 0.2})`,
+      ].join(', ')
+    : 'none'
+
+  return (
+    <span
+      ref={charRef}
+      className="relative inline-block"
+      style={{
+        textShadow: glowShadow,
+        transition: 'text-shadow 0.15s ease-out'
+      }}
+    >
+      {char === ' ' ? '\u00A0' : char}
+    </span>
+  )
+}
 
 function FloatingIcon({
   icon,
@@ -128,21 +261,29 @@ export function HeroSection() {
           {/* Left side - Content */}
           <div className="space-y-7 pt-12">
             <div className="inline-block">
-              <span className="text-[#6B7280] text-sm font-normal tracking-wide">[ 150+ organizations ]</span>
+              <GlitchText delay={100} className="text-[#6B7280] text-sm font-normal tracking-wide">
+                [ 150+ organizations ]
+              </GlitchText>
             </div>
 
-            <h1 className="text-[64px] leading-[1.1] font-bold text-white tracking-tight">
-              Verify Content<br />Beyond Boundaries
+            <h1 className="text-[64px] leading-[1.1] font-bold text-white tracking-tight cursor-default">
+              <GlitchText delay={250}>
+                <GlowText text="Verify Content" />
+              </GlitchText>
+              <br />
+              <GlitchText delay={400}>
+                <GlowText text="Beyond Boundaries" />
+              </GlitchText>
             </h1>
 
-            <p className="text-[#94A3B8] text-[18px] max-w-[550px] leading-relaxed font-normal">
+            <GlitchText delay={550} className="text-[#94A3B8] text-[18px] max-w-[550px] leading-relaxed font-normal block">
               Simplified Image Authentication with Unrivaled Content Verification via Reclaim
-            </p>
+            </GlitchText>
 
             <div className="flex flex-wrap gap-4 pt-4">
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2.5 px-8 py-3.5 text-white rounded-[14px] font-medium transition-all relative overflow-hidden group"
+                className="inline-flex items-center gap-2.5 px-8 py-3.5 text-white rounded-[14px] font-medium transition-all relative group glow-navbar"
                 style={{
                   background: 'rgba(79, 124, 255, 0.15)',
                   backdropFilter: 'blur(12px)',
@@ -152,13 +293,10 @@ export function HeroSection() {
               >
                 <span className="relative z-10">Get Started</span>
                 <ArrowRight className="w-4 h-4 relative z-10" />
-                <div
-                  className="absolute inset-0 bg-gradient-to-br from-[#4F7CFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
-                />
               </Link>
               <Link
                 href="/verify"
-                className="inline-flex items-center px-8 py-3.5 border border-[#1E293B] bg-[#0B0F1A] text-[#94A3B8] rounded-[14px] font-medium hover:bg-[#1E293B]/50 hover:text-white transition-all"
+                className="inline-flex items-center px-8 py-3.5 border border-[#1E293B] bg-[#0B0F1A] text-[#94A3B8] rounded-[14px] font-medium hover:text-white transition-all glow-navbar"
               >
                 Verify an Image
               </Link>
