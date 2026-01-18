@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { WalletProvider } from '@/components/WalletProvider'
+import { PageTransition } from '@/components/PageTransition'
 import './globals.css'
 
 const inter = Inter({ subsets: ["latin"] });
@@ -30,7 +31,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         <WalletProvider>
-          {children}
+          <PageTransition>
+            {children}
+          </PageTransition>
         </WalletProvider>
         <Analytics />
       </body>
