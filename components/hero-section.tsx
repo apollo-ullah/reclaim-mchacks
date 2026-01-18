@@ -1,9 +1,102 @@
 "use client"
 
-import React from "react"
+import React, { useRef, useState, useCallback } from "react"
 
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+
+function GlowText({ text }: { text: string }) {
+  const containerRef = useRef<HTMLSpanElement>(null)
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null)
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setMousePos(null)
+  }, [])
+
+  return (
+    <span
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="inline"
+    >
+      {text.split('').map((char, i) => (
+        <GlowChar key={i} char={char} index={i} mousePos={mousePos} containerRef={containerRef} />
+      ))}
+    </span>
+  )
+}
+
+function GlowChar({ 
+  char, 
+  index, 
+  mousePos, 
+  containerRef 
+}: { 
+  char: string
+  index: number
+  mousePos: { x: number; y: number } | null
+  containerRef: React.RefObject<HTMLSpanElement | null>
+}) {
+  const charRef = useRef<HTMLSpanElement>(null)
+  
+  let opacity = 0
+  
+  if (mousePos && charRef.current && containerRef.current) {
+    const charRect = charRef.current.getBoundingClientRect()
+    const containerRect = containerRef.current.getBoundingClientRect()
+    
+    const charCenterX = charRect.left - containerRect.left + charRect.width / 2
+    const charCenterY = charRect.top - containerRect.top + charRect.height / 2
+    
+    const distance = Math.sqrt(
+      Math.pow(mousePos.x - charCenterX, 2) + 
+      Math.pow(mousePos.y - charCenterY, 2)
+    )
+    
+    const maxDistance = 120
+    opacity = Math.max(0, 1 - distance / maxDistance)
+  }
+
+  // Contour glow using the navbar gradient colors (blue -> purple -> pink)
+  const glowShadow = opacity > 0 
+    ? [
+        // Tight outline glow - blue
+        `0 0 1px rgba(59, 130, 246, ${opacity})`,
+        `-1px -1px 2px rgba(59, 130, 246, ${opacity * 0.8})`,
+        `1px 1px 2px rgba(139, 92, 246, ${opacity * 0.8})`,
+        // Medium glow - purple
+        `0 0 4px rgba(139, 92, 246, ${opacity * 0.7})`,
+        `-2px -1px 6px rgba(59, 130, 246, ${opacity * 0.5})`,
+        `2px 1px 6px rgba(236, 72, 153, ${opacity * 0.5})`,
+        // Outer glow - pink
+        `0 0 12px rgba(139, 92, 246, ${opacity * 0.4})`,
+        `0 0 20px rgba(236, 72, 153, ${opacity * 0.2})`,
+      ].join(', ')
+    : 'none'
+
+  return (
+    <span
+      ref={charRef}
+      className="relative inline-block"
+      style={{
+        textShadow: glowShadow,
+        transition: 'text-shadow 0.15s ease-out'
+      }}
+    >
+      {char === ' ' ? '\u00A0' : char}
+    </span>
+  )
+}
 
 function FloatingIcon({
   icon,
@@ -131,8 +224,9 @@ export function HeroSection() {
               <span className="text-[#6B7280] text-sm font-normal tracking-wide">[ 150+ organizations ]</span>
             </div>
 
-            <h1 className="text-[64px] leading-[1.1] font-bold text-white tracking-tight">
-              Verify Content<br />Beyond Boundaries
+            <h1 className="text-[64px] leading-[1.1] font-bold text-white tracking-tight cursor-default">
+              <GlowText text="Verify Content" /><br />
+              <GlowText text="Beyond Boundaries" />
             </h1>
 
             <p className="text-[#94A3B8] text-[18px] max-w-[550px] leading-relaxed font-normal">
