@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   description: 'Simplified Image Authentication with Unrivaled Content Verification via Reclaim',
   generator: 'v0.app',
   icons: {
-    icon: '/reclaim_icon.png',
-    apple: '/reclaim_icon.png',
+    icon: '/icon.png',
+    apple: '/icon.png',
   },
 }
 
