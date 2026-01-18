@@ -1,40 +1,52 @@
-import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-import { WalletProvider } from "@/components/WalletProvider";
-import { Header } from "@/components/Header";
+import React from "react"
+import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
+import { WalletProvider } from '@/components/WalletProvider'
+import './globals.css'
 
-const inter = Inter({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Reclaim - Prove What's Real",
-  description:
-    "Creator-owned media authenticity. Sign your images with invisible watermarks and verify their origin.",
-};
+  title: 'Reclaim - Verify Content Beyond Boundaries',
+  description: 'Simplified Image Authentication with Unrivaled Content Verification via Reclaim',
+  generator: 'v0.app',
+  icons: {
+    icon: [
+      {
+        url: '/icon-light-32x32.png',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        url: '/icon-dark-32x32.png',
+        media: '(prefers-color-scheme: dark)',
+      },
+      {
+        url: '/icon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    apple: '/apple-icon.png',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0B0F1A',
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-zinc-950`}
-      >
+    <html lang="en">
+      <body className={`${inter.className} antialiased`}>
         <WalletProvider>
-          <Header />
-          <main>{children}</main>
+          {children}
         </WalletProvider>
+        <Analytics />
       </body>
     </html>
-  );
+  )
 }

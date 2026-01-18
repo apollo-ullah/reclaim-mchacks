@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { embedPayload, SteganographyPayload } from "@/lib/steganography";
+import { embedPayload, SteganographyPayload, SourceType } from "@/lib/steganography";
 import { getShortHash } from "@/lib/hash";
-import { recordSignedImage } from "@/lib/db";
+import { recordSignedImage, getCreatorById } from "@/lib/db";
+import { signImageBuffer, isC2PAAvailable } from "@/lib/c2pa";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("image") as File | null;
     const creatorId = formData.get("creator_id") as string | null;
+    const sourceTypeParam = formData.get("source_type") as string | null;
+
+    // Validate source_type
+    const sourceType: SourceType = sourceTypeParam === "ai" ? "ai" : "authentic";
 
     // Validate inputs
     if (!file) {
@@ -50,16 +55,50 @@ export async function POST(request: NextRequest) {
       c: creatorId.trim(),
       t: timestamp,
       h: originalHash,
+      s: sourceType,
     };
 
-    // Embed payload into image
-    const signedImageBuffer = await embedPayload(imageBuffer, payload);
+    // Embed LSB payload into image
+    const lsbSignedBuffer = await embedPayload(imageBuffer, payload);
 
     // Record in database
-    await recordSignedImage(creatorId.trim(), originalHash);
+    await recordSignedImage(creatorId.trim(), originalHash, sourceType);
+
+    // Get creator display name for C2PA metadata
+    const creator = await getCreatorById(creatorId.trim());
+    const authorName = creator?.display_name || creatorId.trim();
+
+    // Apply C2PA signing on top of LSB watermark
+    let finalBuffer = lsbSignedBuffer;
+    let c2paApplied = false;
+
+    if (isC2PAAvailable()) {
+      try {
+        const c2paBuffer = await signImageBuffer(
+          lsbSignedBuffer,
+          {
+            author: authorName,
+            txId: originalHash, // Use image hash as identifier
+            additionalMetadata: {
+              sourceType: sourceType,
+              platform: "Reclaim",
+            },
+          },
+          "png"
+        );
+
+        if (c2paBuffer) {
+          finalBuffer = c2paBuffer;
+          c2paApplied = true;
+        }
+      } catch (c2paError) {
+        console.error("C2PA signing failed, falling back to LSB only:", c2paError);
+        // Continue with LSB-only buffer
+      }
+    }
 
     // Convert to base64 for response
-    const signedImageBase64 = signedImageBuffer.toString("base64");
+    const signedImageBase64 = finalBuffer.toString("base64");
 
     return NextResponse.json({
       success: true,
@@ -69,6 +108,8 @@ export async function POST(request: NextRequest) {
         timestamp: new Date(payload.t * 1000).toISOString(),
         originalHash: payload.h,
         version: payload.v,
+        sourceType: payload.s,
+        c2paApplied,
       },
     });
   } catch (error) {

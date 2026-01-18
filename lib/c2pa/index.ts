@@ -56,3 +56,11 @@ export {
   formatFileSize,
 } from './utils';
 
+// Export buffer-based functions for API routes
+export {
+  signImageBuffer,
+  verifyImageBuffer,
+  hasC2PAManifestBuffer,
+  isC2PAAvailable,
+} from './buffer-signer';
+

@@ -7,11 +7,14 @@ const MAGIC_HEADER = "RECLAIM_V1:";
 // End marker to know where the message ends
 const END_MARKER = ":END_RECLAIM";
 
+export type SourceType = "authentic" | "ai";
+
 export interface SteganographyPayload {
   v: number; // version
   c: string; // creator_id
   t: number; // timestamp
   h: string; // first 8 chars of SHA-256 of original image
+  s: SourceType; // source type: "authentic" for human-created, "ai" for AI-generated
 }
 
 /**

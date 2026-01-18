@@ -3,7 +3,10 @@
 import { useState, useCallback } from "react";
 import { ImageUpload } from "@/components/ImageUpload";
 import { useAuth } from "@/lib/auth-context";
-import Link from "next/link";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { Download, PenTool, RotateCcw, Sparkles, ShieldCheck } from "lucide-react";
+
+type SourceType = "authentic" | "ai";
 
 interface SignResult {
   success: boolean;
@@ -13,22 +16,23 @@ interface SignResult {
     timestamp: string;
     originalHash: string;
     version: number;
+    sourceType: SourceType;
   };
   error?: string;
 }
 
 export default function SignPage() {
-  const { creator, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { creator } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<SignResult | null>(null);
+  const [sourceType, setSourceType] = useState<SourceType>("authentic");
 
   const handleImageSelect = useCallback((file: File) => {
     setSelectedFile(file);
     setResult(null);
 
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target?.result as string);
@@ -46,6 +50,7 @@ export default function SignPage() {
       const formData = new FormData();
       formData.append("image", selectedFile);
       formData.append("creator_id", creator.id);
+      formData.append("source_type", sourceType);
 
       const response = await fetch("/api/sign", {
         method: "POST",
@@ -79,275 +84,301 @@ export default function SignPage() {
     setSelectedFile(null);
     setPreview(null);
     setResult(null);
+    setSourceType("authentic");
   };
 
-  // Show auth required message if not authenticated
-  if (authLoading) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin mx-auto" />
-          <p className="text-zinc-400 mt-4">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-zinc-100 mb-2">Sign an Image</h1>
-          <p className="text-zinc-400">
-            Embed your invisible watermark to claim ownership
-          </p>
-        </div>
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-zinc-100 mb-2">Creator Account Required</h2>
-          <p className="text-zinc-400 mb-6">
-            Create a creator account to start signing your images with your unique identity.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all"
-            >
-              Create Account
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-zinc-800 text-zinc-100 rounded-lg font-medium hover:bg-zinc-700 transition-all border border-zinc-700"
-            >
-              Log In
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-zinc-100 mb-2">Sign an Image</h1>
-        <p className="text-zinc-400">
-          Embed your invisible watermark to claim ownership
-        </p>
-      </div>
-
-      {!result?.success ? (
-        <div className="space-y-6">
-          {/* Creator Info */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                {creator?.display_name?.[0]?.toUpperCase() || "?"}
-              </div>
-              <div>
-                <p className="text-sm text-zinc-400">Signing as</p>
-                <p className="font-medium text-zinc-100">{creator?.display_name}</p>
-              </div>
-              <div className="ml-auto text-right">
-                <p className="text-xs text-zinc-500">Wallet</p>
-                <p className="text-xs font-mono text-zinc-400">
-                  {creator?.id.slice(0, 6)}...{creator?.id.slice(-4)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Image Upload */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <label className="block text-sm font-medium text-zinc-300 mb-3">
-              Image
-            </label>
-            <ImageUpload
-              onImageSelect={handleImageSelect}
-              preview={preview}
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Error Message */}
-          {result?.error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-              <p className="text-red-400 text-sm">{result.error}</p>
-            </div>
-          )}
-
-          {/* Sign Button */}
-          <button
-            onClick={handleSign}
-            disabled={!selectedFile || !creator || isLoading}
-            className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
+    <DashboardLayout
+      title="Sign Image"
+      description="Embed your invisible watermark to prove ownership"
+    >
+      <div className="max-w-2xl">
+        {!result?.success ? (
+          <div className="space-y-6">
+            {/* Creator Info Card */}
+            <div
+              className="rounded-2xl border border-[#1E293B] p-5"
+              style={{
+                background: 'rgba(13, 17, 23, 0.6)',
+                backdropFilter: 'blur(12px)'
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #5B8DEF 0%, #4F7CFF 100%)',
+                    boxShadow: '0 4px 16px rgba(79, 124, 255, 0.3)'
+                  }}
                 >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Signing...
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                  />
-                </svg>
-                Sign Image
-              </>
-            )}
-          </button>
-
-          {/* Format Warning */}
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-amber-400 mt-0.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <div>
-                <p className="text-sm text-amber-200 font-medium">
-                  Output Format
-                </p>
-                <p className="text-xs text-amber-200/70 mt-1">
-                  Signed images are always saved as PNG to preserve the
-                  watermark. JPEG compression can destroy the hidden data.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Success Result */}
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-emerald-400">
-                  Image Signed Successfully
-                </h3>
-                <p className="text-sm text-zinc-400">
-                  Your watermark has been embedded
-                </p>
+                  {creator?.display_name?.[0]?.toUpperCase() || "?"}
+                </div>
+                <div>
+                  <p className="text-sm text-[#6B7280]">Signing as</p>
+                  <p className="font-semibold text-white">{creator?.display_name}</p>
+                </div>
+                <div className="ml-auto text-right">
+                  <p className="text-xs text-[#6B7280]">Wallet</p>
+                  <p className="text-xs font-mono text-[#94A3B8]">
+                    {creator?.id.slice(0, 6)}...{creator?.id.slice(-4)}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Signed Image Preview */}
-            <div className="bg-zinc-900 rounded-lg p-4 mb-4">
-              <img
-                src={`data:image/png;base64,${result.signedImageBase64}`}
-                alt="Signed image"
-                className="max-h-64 mx-auto rounded-lg"
+            {/* Source Type Selector */}
+            <div
+              className="rounded-2xl border border-[#1E293B] p-5"
+              style={{
+                background: 'rgba(13, 17, 23, 0.6)',
+                backdropFilter: 'blur(12px)'
+              }}
+            >
+              <label className="block text-sm font-medium text-[#94A3B8] mb-3">
+                Content Type
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSourceType("authentic")}
+                  className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
+                    sourceType === "authentic"
+                      ? "border-emerald-500/50 bg-emerald-500/10"
+                      : "border-[#1E293B] bg-[#0B0F1A] hover:border-[#374151]"
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      sourceType === "authentic"
+                        ? "bg-emerald-500/20"
+                        : "bg-[#1E293B]"
+                    }`}
+                  >
+                    <ShieldCheck
+                      className={`w-5 h-5 ${
+                        sourceType === "authentic" ? "text-emerald-400" : "text-[#6B7280]"
+                      }`}
+                    />
+                  </div>
+                  <div className="text-left">
+                    <p className={`font-medium ${sourceType === "authentic" ? "text-white" : "text-[#94A3B8]"}`}>
+                      Authentic
+                    </p>
+                    <p className="text-xs text-[#6B7280]">Human-created content</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSourceType("ai")}
+                  className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
+                    sourceType === "ai"
+                      ? "border-purple-500/50 bg-purple-500/10"
+                      : "border-[#1E293B] bg-[#0B0F1A] hover:border-[#374151]"
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      sourceType === "ai"
+                        ? "bg-purple-500/20"
+                        : "bg-[#1E293B]"
+                    }`}
+                  >
+                    <Sparkles
+                      className={`w-5 h-5 ${
+                        sourceType === "ai" ? "text-purple-400" : "text-[#6B7280]"
+                      }`}
+                    />
+                  </div>
+                  <div className="text-left">
+                    <p className={`font-medium ${sourceType === "ai" ? "text-white" : "text-[#94A3B8]"}`}>
+                      AI-Generated
+                    </p>
+                    <p className="text-xs text-[#6B7280]">Made with AI tools</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Image Upload */}
+            <div
+              className="rounded-2xl border border-[#1E293B] p-6"
+              style={{
+                background: 'rgba(13, 17, 23, 0.6)',
+                backdropFilter: 'blur(12px)'
+              }}
+            >
+              <label className="block text-sm font-medium text-[#94A3B8] mb-3">
+                Select Image
+              </label>
+              <ImageUpload
+                onImageSelect={handleImageSelect}
+                preview={preview}
+                disabled={isLoading}
               />
             </div>
 
-            {/* Metadata */}
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-zinc-500">Creator</span>
-                <span className="text-zinc-300">{result.metadata?.creatorId}</span>
+            {/* Error Message */}
+            {result?.error && (
+              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+                <p className="text-red-400 text-sm">{result.error}</p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-500">Signed At</span>
-                <span className="text-zinc-300">
-                  {result.metadata?.timestamp &&
-                    new Date(result.metadata.timestamp).toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-500">Image Hash</span>
-                <span className="font-mono text-zinc-300">
-                  {result.metadata?.originalHash}
-                </span>
+            )}
+
+            {/* Sign Button */}
+            <button
+              onClick={handleSign}
+              disabled={!selectedFile || !creator || isLoading}
+              className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-4 text-white rounded-[14px] font-medium transition-all relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: 'rgba(79, 124, 255, 0.15)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(79, 124, 255, 0.3)',
+                boxShadow: '0 8px 32px rgba(79, 124, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 relative z-10" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span className="relative z-10">Signing...</span>
+                </>
+              ) : (
+                <>
+                  <PenTool className="w-5 h-5 relative z-10" />
+                  <span className="relative z-10">Sign Image</span>
+                </>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#4F7CFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+
+            {/* Format Warning */}
+            <div
+              className="rounded-2xl p-5"
+              style={{
+                background: 'rgba(245, 158, 11, 0.08)',
+                border: '1px solid rgba(245, 158, 11, 0.25)'
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-amber-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm text-amber-400 font-medium">Output Format</p>
+                  <p className="text-xs text-[#94A3B8] mt-1">
+                    Signed images are always saved as PNG to preserve the watermark. JPEG compression can destroy the hidden data.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Success Result */}
+            <div
+              className="rounded-2xl p-6"
+              style={{
+                background: 'rgba(16, 185, 129, 0.08)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                boxShadow: '0 8px 32px rgba(16, 185, 129, 0.1)'
+              }}
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    boxShadow: '0 8px 24px rgba(16, 185, 129, 0.3)'
+                  }}
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-emerald-400 text-lg">Image Signed Successfully</h3>
+                  <p className="text-sm text-[#94A3B8]">Your watermark has been embedded</p>
+                </div>
+              </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleDownload}
-              className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              {/* Signed Image Preview */}
+              <div className="bg-[#0B0F1A] rounded-xl p-4 mb-6">
+                <img
+                  src={`data:image/png;base64,${result.signedImageBase64}`}
+                  alt="Signed image"
+                  className="max-h-64 mx-auto rounded-lg"
+                  style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
                 />
-              </svg>
-              Download Signed Image
-            </button>
-            <button
-              onClick={handleReset}
-              className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-medium rounded-lg border border-zinc-700 transition-colors"
-            >
-              Sign Another Image
-            </button>
+              </div>
+
+              {/* Metadata */}
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#6B7280]">Creator</span>
+                  <span className="text-white font-medium">{result.metadata?.creatorId}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#6B7280]">Content Type</span>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                    result.metadata?.sourceType === "ai"
+                      ? "bg-purple-500/20 text-purple-400"
+                      : "bg-emerald-500/20 text-emerald-400"
+                  }`}>
+                    {result.metadata?.sourceType === "ai" ? (
+                      <>
+                        <Sparkles className="w-3 h-3" />
+                        AI-Generated
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-3 h-3" />
+                        Authentic
+                      </>
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#6B7280]">Signed At</span>
+                  <span className="text-white font-medium">
+                    {result.metadata?.timestamp && new Date(result.metadata.timestamp).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#6B7280]">Image Hash</span>
+                  <span className="font-mono text-[#94A3B8]">{result.metadata?.originalHash}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleDownload}
+                className="flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-4 text-white rounded-[14px] font-medium transition-all relative overflow-hidden group"
+                style={{
+                  background: 'rgba(79, 124, 255, 0.15)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(79, 124, 255, 0.3)',
+                  boxShadow: '0 8px 32px rgba(79, 124, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <Download className="w-5 h-5 relative z-10" />
+                <span className="relative z-10">Download Signed Image</span>
+                <div className="absolute inset-0 bg-gradient-to-br from-[#4F7CFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+              <button
+                onClick={handleReset}
+                className="flex-1 inline-flex items-center justify-center gap-2 py-4 border border-[#1E293B] bg-[#0B0F1A] text-[#94A3B8] rounded-[14px] font-medium hover:bg-[#1E293B]/50 hover:text-white transition-all"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Sign Another
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </DashboardLayout>
   );
 }

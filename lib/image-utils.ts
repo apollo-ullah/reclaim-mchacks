@@ -17,7 +17,8 @@ export function intToRGBA(color: number): { r: number; g: number; b: number; a: 
 
 /**
  * Convert RGBA components to integer color
+ * Uses >>> 0 to ensure unsigned 32-bit integer (prevents negative values)
  */
 export function rgbaToInt(r: number, g: number, b: number, a: number): number {
-  return ((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | (a & 0xff);
+  return (((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | (a & 0xff)) >>> 0;
 }

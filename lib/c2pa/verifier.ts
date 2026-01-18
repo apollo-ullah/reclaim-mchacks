@@ -122,13 +122,49 @@ export async function verifyImage(imagePath: string): Promise<C2PAManifest> {
     }
 
     // === SIGNATURE VALIDATION ===
-    // The validation_status tells us if the signature is cryptographically valid.
-    // Possible values:
-    // - "valid": Signature is good, manifest hasn't been tampered with
-    // - "invalid": Signature check failed, content may be tampered
-    // - "unknown": Unable to verify (e.g., certificate not trusted)
-    const validationStatus = reader !== null ? (reader as any).validation_status || 'unknown' : 'unknown';
-    const isValid = validationStatus === 'valid';
+    // The validation_status is an array of validation errors/warnings.
+    // We need to check for specific error codes that indicate tampering.
+    //
+    // Key error codes:
+    // - signingCredential.untrusted: Self-signed cert, expected for dev (NOT tampering)
+    // - assertion.hashedURI.mismatch: Hash doesn't match data (TAMPERING!)
+    // - claim.signature.mismatch: Signature doesn't match (TAMPERING!)
+    // - assertion.dataHash.mismatch: Data hash mismatch (TAMPERING!)
+
+    const readerJson = reader !== null ? (reader as any).json() : null;
+    const validationStatuses = readerJson?.validation_status || [];
+
+    // Check for tampering indicators
+    const tamperCodes = [
+      'assertion.hashedURI.mismatch',
+      'claim.signature.mismatch',
+      'assertion.dataHash.mismatch',
+      'claim.dataHash.mismatch',
+      'assertion.bmff.hashMismatch',
+    ];
+
+    const hasTamperIndicator = validationStatuses.some(
+      (status: { code?: string }) => tamperCodes.some(code => status.code?.includes(code))
+    );
+
+    // Only signingCredential.untrusted is acceptable (self-signed certs)
+    const hasOnlyTrustIssues = validationStatuses.every(
+      (status: { code?: string }) => status.code === 'signingCredential.untrusted'
+    );
+
+    // Determine validation status string
+    let validationStatus: string;
+    if (hasTamperIndicator) {
+      validationStatus = 'invalid'; // Tampering detected!
+    } else if (validationStatuses.length === 0) {
+      validationStatus = 'valid'; // No issues at all
+    } else if (hasOnlyTrustIssues) {
+      validationStatus = 'unknown'; // Only trust issues (self-signed), not tampering
+    } else {
+      validationStatus = 'unknown'; // Other issues
+    }
+
+    const isValid = validationStatus === 'valid' || validationStatus === 'unknown';
 
     // Add validation warnings if data is missing
     if (!author) {

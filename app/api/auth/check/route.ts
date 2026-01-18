@@ -12,18 +12,26 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const creator = await getCreatorById(wallet);
+  try {
+    const creator = await getCreatorById(wallet);
 
-  if (creator) {
-    return NextResponse.json({
-      exists: true,
-      creator: {
-        id: creator.id,
-        display_name: creator.display_name,
-        created_at: creator.created_at,
-      },
-    });
+    if (creator) {
+      return NextResponse.json({
+        exists: true,
+        creator: {
+          id: creator.id,
+          display_name: creator.display_name,
+          created_at: creator.created_at,
+        },
+      });
+    }
+
+    return NextResponse.json({ exists: false });
+  } catch (error) {
+    console.error("Auth check error:", error);
+    return NextResponse.json(
+      { error: "Database connection failed", exists: false },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ exists: false });
 }

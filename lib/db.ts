@@ -45,6 +45,10 @@ const creatorSchema = new mongoose.Schema(
   {
     _id: { type: String, required: true }, // wallet address as primary key
     display_name: { type: String, default: null },
+    bio: { type: String, default: null, maxlength: 280 },
+    twitter: { type: String, default: null },
+    website: { type: String, default: null },
+    avatar_url: { type: String, default: null },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
@@ -55,6 +59,10 @@ const signedImageSchema = new mongoose.Schema(
   {
     creator_id: { type: String, required: true, ref: "Creator", index: true },
     original_hash: { type: String, required: true, index: true },
+    // Source type: "authentic" for human-created, "ai" for AI-generated
+    source_type: { type: String, enum: ["authentic", "ai"], default: "authentic", index: true },
+    // Optional: prompt used for AI-generated images
+    ai_prompt: { type: String, default: null },
     // Optional: cNFT address if minted on Solana
     cnft_address: { type: String, default: null },
   },
@@ -77,13 +85,21 @@ const SignedImage =
 export interface Creator {
   id: string;
   display_name: string | null;
+  bio: string | null;
+  twitter: string | null;
+  website: string | null;
+  avatar_url: string | null;
   created_at: string;
 }
+
+export type SourceType = "authentic" | "ai";
 
 export interface SignedImage {
   id: string;
   creator_id: string;
   original_hash: string;
+  source_type: SourceType;
+  ai_prompt?: string | null;
   signed_at: string;
   cnft_address?: string | null;
 }
@@ -121,12 +137,16 @@ export async function creatorExists(walletAddress: string): Promise<boolean> {
 export async function recordSignedImage(
   creatorId: string,
   originalHash: string,
+  sourceType: SourceType = "authentic",
+  aiPrompt?: string,
   cnftAddress?: string
 ): Promise<string> {
   await connectDB();
   const signedImage = await SignedImage.create({
     creator_id: creatorId,
     original_hash: originalHash,
+    source_type: sourceType,
+    ai_prompt: aiPrompt || null,
     cnft_address: cnftAddress || null,
   });
   return signedImage._id.toString();
@@ -141,6 +161,49 @@ export async function getCreatorById(
   return {
     id: doc._id,
     display_name: doc.display_name,
+    bio: doc.bio || null,
+    twitter: doc.twitter || null,
+    website: doc.website || null,
+    avatar_url: doc.avatar_url || null,
+    created_at: doc.created_at?.toISOString() || new Date().toISOString(),
+  };
+}
+
+export interface UpdateProfileData {
+  display_name?: string;
+  bio?: string | null;
+  twitter?: string | null;
+  website?: string | null;
+  avatar_url?: string | null;
+}
+
+export async function updateCreatorProfile(
+  walletAddress: string,
+  data: UpdateProfileData
+): Promise<Creator | null> {
+  await connectDB();
+  const updateData: Record<string, unknown> = {};
+
+  if (data.display_name !== undefined) updateData.display_name = data.display_name;
+  if (data.bio !== undefined) updateData.bio = data.bio;
+  if (data.twitter !== undefined) updateData.twitter = data.twitter;
+  if (data.website !== undefined) updateData.website = data.website;
+  if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url;
+
+  const doc = await Creator.findByIdAndUpdate(
+    walletAddress,
+    updateData,
+    { new: true }
+  );
+
+  if (!doc) return null;
+  return {
+    id: doc._id,
+    display_name: doc.display_name,
+    bio: doc.bio || null,
+    twitter: doc.twitter || null,
+    website: doc.website || null,
+    avatar_url: doc.avatar_url || null,
     created_at: doc.created_at?.toISOString() || new Date().toISOString(),
   };
 }
@@ -156,6 +219,8 @@ export async function getImagesByCreator(
     id: doc._id.toString(),
     creator_id: doc.creator_id,
     original_hash: doc.original_hash,
+    source_type: doc.source_type || "authentic",
+    ai_prompt: doc.ai_prompt,
     signed_at: doc.signed_at?.toISOString() || new Date().toISOString(),
     cnft_address: doc.cnft_address,
   }));
@@ -173,6 +238,8 @@ export async function findImageByHash(
     id: doc._id.toString(),
     creator_id: doc.creator_id,
     original_hash: doc.original_hash,
+    source_type: doc.source_type || "authentic",
+    ai_prompt: doc.ai_prompt,
     signed_at: doc.signed_at?.toISOString() || new Date().toISOString(),
     cnft_address: doc.cnft_address,
     creator_created_at:
@@ -208,6 +275,8 @@ export async function findSignedImageByHash(
     id: doc._id.toString(),
     creator_id: doc.creator_id,
     original_hash: doc.original_hash,
+    source_type: doc.source_type || "authentic",
+    ai_prompt: doc.ai_prompt,
     signed_at: doc.signed_at?.toISOString() || new Date().toISOString(),
     cnft_address: doc.cnft_address,
   };
