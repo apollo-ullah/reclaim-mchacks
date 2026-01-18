@@ -414,3 +414,79 @@ a {
   animation: fadeIn 0.7s ease-out;
 }
 
+/* Aurora Background Effect */
+.aurora-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.aurora {
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  mix-blend-mode: screen;
+}
+
+.aurora-1 {
+  top: -20%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+  animation: aurora-drift-1 20s ease-in-out infinite;
+}
+
+.aurora-2 {
+  top: 10%;
+  right: -20%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, transparent 70%);
+  animation: aurora-drift-2 25s ease-in-out infinite;
+}
+
+.aurora-3 {
+  bottom: -30%;
+  left: 20%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, transparent 70%);
+  animation: aurora-drift-3 22s ease-in-out infinite;
+}
+
+@keyframes aurora-drift-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(10%, 15%) scale(1.1);
+  }
+  66% {
+    transform: translate(-5%, 5%) scale(0.95);
+  }
+}
+
+@keyframes aurora-drift-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-15%, 10%) scale(1.05);
+  }
+  66% {
+    transform: translate(5%, -10%) scale(1.1);
+  }
+}
+
+@keyframes aurora-drift-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(15%, -5%) scale(1.08);
+  }
+  66% {
+    transform: translate(-10%, 10%) scale(0.92);
+  }
+}
+

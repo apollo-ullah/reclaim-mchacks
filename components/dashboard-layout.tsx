@@ -4,6 +4,7 @@ import { ReactNode, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Sidebar } from "./sidebar"
+import { Aurora } from "./Aurora"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -40,11 +41,12 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0F1A]">
+    <div className="min-h-screen bg-[#0B0F1A] relative">
+      <Aurora />
       <Sidebar />
 
       {/* Main Content */}
-      <main className="ml-64 min-h-screen">
+      <main className="ml-64 min-h-screen relative z-10">
         {/* Header */}
         {(title || description) && (
           <header className="border-b border-[#1E293B] px-8 py-6">
