@@ -1,8 +1,10 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { Logo } from "./Logo"
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -19,30 +21,7 @@ export function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 px-8 py-6">
       <div className="max-w-[1400px] mx-auto flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 28 28"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-white"
-          >
-            <path
-              d="M7 14C7 10.134 10.134 7 14 7C17.866 7 21 10.134 21 14C21 17.866 17.866 21 14 21"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M21 14C21 17.866 17.866 21 14 21C10.134 21 7 17.866 7 14C7 10.134 10.134 7 14 7"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="text-white font-semibold text-[18px]">Reclaim</span>
-        </Link>
+        <Logo size="lg" />
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center bg-[#0B0F1A]/60 backdrop-blur-xl rounded-full px-2 py-2 border border-[#1E293B]/60">

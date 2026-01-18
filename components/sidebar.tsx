@@ -6,6 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 import { PenTool, ShieldCheck, Sparkles, LogOut, User, Settings } from "lucide-react"
+import { Logo } from "./Logo"
 
 const navItems = [
   {
@@ -48,30 +49,7 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#0a0e14] border-r border-[#1E293B] flex flex-col z-40">
       {/* Logo */}
       <div className="p-6 border-b border-[#1E293B]">
-        <Link href="/" className="flex items-center gap-2.5">
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 28 28"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-white"
-          >
-            <path
-              d="M7 14C7 10.134 10.134 7 14 7C17.866 7 21 10.134 21 14C21 17.866 17.866 21 14 21"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M21 14C21 17.866 17.866 21 14 21C10.134 21 7 17.866 7 14C7 10.134 10.134 7 14 7"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="text-white font-semibold text-[18px]">Reclaim</span>
-        </Link>
+        <Logo size="md" />
       </div>
 
       {/* Navigation */}
