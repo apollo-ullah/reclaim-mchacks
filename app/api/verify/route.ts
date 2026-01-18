@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     // In a real implementation, you'd use perceptual hashing or store the original separately
 
     // Get creator display name from database
-    const creatorData = getCreatorById(payload.c);
+    const creatorData = await getCreatorById(payload.c);
     const displayName = creatorData?.display_name || payload.c;
 
     const response: VerifyResponse = {

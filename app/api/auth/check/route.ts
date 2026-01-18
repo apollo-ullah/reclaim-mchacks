@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const creator = getCreatorById(wallet);
+  const creator = await getCreatorById(wallet);
 
   if (creator) {
     return NextResponse.json({

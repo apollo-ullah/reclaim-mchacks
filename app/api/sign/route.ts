@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     const signedImageBuffer = await embedPayload(imageBuffer, payload);
 
     // Record in database
-    recordSignedImage(creatorId.trim(), originalHash);
+    await recordSignedImage(creatorId.trim(), originalHash);
 
     // Convert to base64 for response
     const signedImageBase64 = signedImageBuffer.toString("base64");

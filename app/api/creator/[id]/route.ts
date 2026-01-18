@@ -15,7 +15,7 @@ export async function GET(
       );
     }
 
-    const creator = getCreatorById(id);
+    const creator = await getCreatorById(id);
 
     if (!creator) {
       return NextResponse.json(
@@ -24,8 +24,8 @@ export async function GET(
       );
     }
 
-    const images = getImagesByCreator(id);
-    const stats = getCreatorStats(id);
+    const images = await getImagesByCreator(id);
+    const stats = await getCreatorStats(id);
 
     return NextResponse.json({
       creator_id: creator.id,
@@ -35,6 +35,7 @@ export async function GET(
         id: img.id,
         hash: img.original_hash,
         signed_at: img.signed_at,
+        cnft_address: img.cnft_address,
       })),
       totalSigned: stats.totalSigned,
     });

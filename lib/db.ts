@@ -1,70 +1,79 @@
-import Database, { Database as DatabaseType } from "better-sqlite3";
-import path from "path";
+import mongoose from "mongoose";
 
-// Database file path
-const DB_PATH = path.join(process.cwd(), "reclaim.db");
+// MongoDB connection string from environment
+const MONGODB_URI = process.env.MONGODB_URI;
 
-// Create or open database
-const db: DatabaseType = new Database(DB_PATH);
-
-// Enable WAL mode for better performance
-db.pragma("journal_mode = WAL");
-
-// Initialize database schema
-db.exec(`
-  CREATE TABLE IF NOT EXISTS creators (
-    id TEXT PRIMARY KEY,
-    display_name TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS signed_images (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    creator_id TEXT NOT NULL,
-    original_hash TEXT NOT NULL,
-    signed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (creator_id) REFERENCES creators(id)
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_signed_images_creator_id ON signed_images(creator_id);
-  CREATE INDEX IF NOT EXISTS idx_signed_images_hash ON signed_images(original_hash);
-`);
-
-// Migration: Add display_name column if it doesn't exist (for existing DBs)
-try {
-  db.exec(`ALTER TABLE creators ADD COLUMN display_name TEXT`);
-} catch {
-  // Column already exists, ignore
+if (!MONGODB_URI) {
+  throw new Error("Please define the MONGODB_URI environment variable");
 }
 
-// Prepared statements
-const insertCreator = db.prepare(
-  "INSERT OR IGNORE INTO creators (id, display_name) VALUES (?, ?)"
+// Connection cache for serverless environments
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var mongoose: MongooseCache | undefined;
+}
+
+const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+
+if (!global.mongoose) {
+  global.mongoose = cached;
+}
+
+async function connectDB(): Promise<typeof mongoose> {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI!).then((mongoose) => {
+      return mongoose;
+    });
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+// ============ SCHEMAS ============
+
+const creatorSchema = new mongoose.Schema(
+  {
+    _id: { type: String, required: true }, // wallet address as primary key
+    display_name: { type: String, default: null },
+  },
+  {
+    timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
+  }
 );
 
-const updateCreatorDisplayName = db.prepare(
-  "UPDATE creators SET display_name = ? WHERE id = ?"
+const signedImageSchema = new mongoose.Schema(
+  {
+    creator_id: { type: String, required: true, ref: "Creator", index: true },
+    original_hash: { type: String, required: true, index: true },
+    // Optional: cNFT address if minted on Solana
+    cnft_address: { type: String, default: null },
+  },
+  {
+    timestamps: { createdAt: "signed_at", updatedAt: "updated_at" },
+  }
 );
 
-const insertSignedImage = db.prepare(
-  "INSERT INTO signed_images (creator_id, original_hash) VALUES (?, ?)"
-);
+// ============ MODELS ============
 
-const getCreator = db.prepare("SELECT * FROM creators WHERE id = ?");
+// Prevent model recompilation in hot-reload
+const Creator =
+  mongoose.models.Creator || mongoose.model("Creator", creatorSchema);
+const SignedImage =
+  mongoose.models.SignedImage ||
+  mongoose.model("SignedImage", signedImageSchema);
 
-const getCreatorImages = db.prepare(
-  "SELECT * FROM signed_images WHERE creator_id = ? ORDER BY signed_at DESC"
-);
+// ============ INTERFACES ============
 
-const getImageByHash = db.prepare(
-  "SELECT si.*, c.created_at as creator_created_at FROM signed_images si JOIN creators c ON si.creator_id = c.id WHERE si.original_hash = ?"
-);
-
-const getCreatorImageCount = db.prepare(
-  "SELECT COUNT(*) as count FROM signed_images WHERE creator_id = ?"
-);
-
-// Export functions
 export interface Creator {
   id: string;
   display_name: string | null;
@@ -72,53 +81,136 @@ export interface Creator {
 }
 
 export interface SignedImage {
-  id: number;
+  id: string;
   creator_id: string;
   original_hash: string;
   signed_at: string;
+  cnft_address?: string | null;
 }
 
-export function createCreator(walletAddress: string, displayName?: string): void {
-  insertCreator.run(walletAddress, displayName || null);
+// ============ DATABASE FUNCTIONS ============
+
+export async function createCreator(
+  walletAddress: string,
+  displayName?: string
+): Promise<void> {
+  await connectDB();
+  await Creator.findOneAndUpdate(
+    { _id: walletAddress },
+    { _id: walletAddress, display_name: displayName || null },
+    { upsert: true, new: true }
+  );
 }
 
-export function updateDisplayName(walletAddress: string, displayName: string): void {
-  updateCreatorDisplayName.run(displayName, walletAddress);
+export async function updateDisplayName(
+  walletAddress: string,
+  displayName: string
+): Promise<void> {
+  await connectDB();
+  await Creator.findByIdAndUpdate(walletAddress, {
+    display_name: displayName,
+  });
 }
 
-export function creatorExists(walletAddress: string): boolean {
-  const creator = getCreator.get(walletAddress) as Creator | undefined;
+export async function creatorExists(walletAddress: string): Promise<boolean> {
+  await connectDB();
+  const creator = await Creator.findById(walletAddress);
   return !!creator;
 }
 
-export function recordSignedImage(
+export async function recordSignedImage(
   creatorId: string,
-  originalHash: string
-): number {
-  // Insert the signed image record (creator must exist)
-  const result = insertSignedImage.run(creatorId, originalHash);
-  return Number(result.lastInsertRowid);
+  originalHash: string,
+  cnftAddress?: string
+): Promise<string> {
+  await connectDB();
+  const signedImage = await SignedImage.create({
+    creator_id: creatorId,
+    original_hash: originalHash,
+    cnft_address: cnftAddress || null,
+  });
+  return signedImage._id.toString();
 }
 
-export function getCreatorById(creatorId: string): Creator | undefined {
-  return getCreator.get(creatorId) as Creator | undefined;
+export async function getCreatorById(
+  creatorId: string
+): Promise<Creator | null> {
+  await connectDB();
+  const doc = await Creator.findById(creatorId);
+  if (!doc) return null;
+  return {
+    id: doc._id,
+    display_name: doc.display_name,
+    created_at: doc.created_at?.toISOString() || new Date().toISOString(),
+  };
 }
 
-export function getImagesByCreator(creatorId: string): SignedImage[] {
-  return getCreatorImages.all(creatorId) as SignedImage[];
+export async function getImagesByCreator(
+  creatorId: string
+): Promise<SignedImage[]> {
+  await connectDB();
+  const docs = await SignedImage.find({ creator_id: creatorId }).sort({
+    signed_at: -1,
+  });
+  return docs.map((doc) => ({
+    id: doc._id.toString(),
+    creator_id: doc.creator_id,
+    original_hash: doc.original_hash,
+    signed_at: doc.signed_at?.toISOString() || new Date().toISOString(),
+    cnft_address: doc.cnft_address,
+  }));
 }
 
-export function findImageByHash(
+export async function findImageByHash(
   hash: string
-): (SignedImage & { creator_created_at: string }) | undefined {
-  return getImageByHash.get(hash) as
-    | (SignedImage & { creator_created_at: string })
-    | undefined;
+): Promise<(SignedImage & { creator_created_at: string }) | null> {
+  await connectDB();
+  const doc = await SignedImage.findOne({ original_hash: hash });
+  if (!doc) return null;
+
+  const creator = await Creator.findById(doc.creator_id);
+  return {
+    id: doc._id.toString(),
+    creator_id: doc.creator_id,
+    original_hash: doc.original_hash,
+    signed_at: doc.signed_at?.toISOString() || new Date().toISOString(),
+    cnft_address: doc.cnft_address,
+    creator_created_at:
+      creator?.created_at?.toISOString() || new Date().toISOString(),
+  };
 }
 
-export function getCreatorStats(creatorId: string): { totalSigned: number } {
-  const result = getCreatorImageCount.get(creatorId) as { count: number };
-  return { totalSigned: result?.count ?? 0 };
+export async function getCreatorStats(
+  creatorId: string
+): Promise<{ totalSigned: number }> {
+  await connectDB();
+  const count = await SignedImage.countDocuments({ creator_id: creatorId });
+  return { totalSigned: count };
 }
 
-export { db };
+// Update signed image with cNFT address after minting
+export async function updateSignedImageWithCNFT(
+  imageId: string,
+  cnftAddress: string
+): Promise<void> {
+  await connectDB();
+  await SignedImage.findByIdAndUpdate(imageId, { cnft_address: cnftAddress });
+}
+
+// Find signed image by hash to link with cNFT
+export async function findSignedImageByHash(
+  hash: string
+): Promise<SignedImage | null> {
+  await connectDB();
+  const doc = await SignedImage.findOne({ original_hash: hash });
+  if (!doc) return null;
+  return {
+    id: doc._id.toString(),
+    creator_id: doc.creator_id,
+    original_hash: doc.original_hash,
+    signed_at: doc.signed_at?.toISOString() || new Date().toISOString(),
+    cnft_address: doc.cnft_address,
+  };
+}
+
+export { connectDB };

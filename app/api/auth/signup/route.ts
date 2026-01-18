@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if creator already exists
-    if (creatorExists(wallet_address)) {
+    if (await creatorExists(wallet_address)) {
       return NextResponse.json(
         { error: "Account already exists for this wallet" },
         { status: 409 }
@@ -36,10 +36,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the creator
-    createCreator(wallet_address, display_name.trim());
+    await createCreator(wallet_address, display_name.trim());
 
     // Fetch and return the created creator
-    const creator = getCreatorById(wallet_address);
+    const creator = await getCreatorById(wallet_address);
 
     return NextResponse.json({
       success: true,
