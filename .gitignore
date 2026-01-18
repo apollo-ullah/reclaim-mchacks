@@ -47,3 +47,17 @@ next-env.d.ts
 
 # uploads
 /public/uploads
+
+# C2PA certificates and keys (NEVER commit private keys!)
+/certs/
+certs/
+
+# Temporary files
+/temp/
+temp/
+
+# Test images
+test.jpg
+test_signed.jpg
+*_signed.jpg
+*_signed.png
